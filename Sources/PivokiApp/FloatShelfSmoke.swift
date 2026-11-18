@@ -38,6 +38,43 @@ import AppKit
     private func check(_ valid:Bool,_ name:String)throws { if !valid { throw NSError(domain:"Pivoki Float QA",code:1,userInfo:[NSLocalizedDescriptionKey:name]) };checks.append(name) }
     private func pause()async {try? await Task.sleep(nanoseconds:350_000_000)}
     private func children(_ view:NSView)->[NSView] { [view]+view.subviews.flatMap(children) }
+    private func dragPaperclip(in shelf: FloatShelfController, stack: NSView, expanded: Bool) async throws {
+        guard let window = shelf.window, let content = window.contentView else { throw CocoaError(.coderInvalidValue) }
+        shelf.setExpanded(expanded)
+        positionAwayFromPointer(window)
+        await pause()
+        // Begin on the visible bottom tip, then cross outside the clip during the drag.
+        let start = window.convertPoint(toScreen: stack.convert(NSPoint(x: 76, y: 29), to: nil))
+        let frame = window.frame
+        let files = shelf.urls
+        let stackCenter = stack.convert(NSPoint(x: 43, y: 49), to: nil)
+        try check(content.hitTest(stackCenter) === stack, "The file stack keeps its own drag target")
+        let down = window.convertPoint(fromScreen: start)
+        guard let target = content.hitTest(down) else { throw CocoaError(.coderInvalidValue) }
+        let steps: [(NSEvent.EventType, CGFloat, CGFloat)] = [
+            (.leftMouseDown, 0, 0), (.leftMouseDragged, 15, 5),
+            (.leftMouseDragged, 90, 30), (.leftMouseUp, 90, 30)
+        ]
+        for (type, dx, dy) in steps {
+            let position = NSPoint(x: start.x + dx, y: start.y + dy)
+            let event = NSEvent.mouseEvent(with: type, location: window.convertPoint(fromScreen: position),
+                modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber,
+                context: nil, eventNumber: 0, clickCount: 1, pressure: 1)!
+            switch type {
+            case .leftMouseDown: target.mouseDown(with: event)
+            case .leftMouseDragged: target.mouseDragged(with: event)
+            default: target.mouseUp(with: event)
+            }
+        }
+        try check(abs(window.frame.minX - frame.minX - 90) < 1 && abs(window.frame.minY - frame.minY - 30) < 1,
+                  "The paperclip moves the \(expanded ? "expanded" : "compact") shelf by the pointer's screen displacement")
+        try check(shelf.urls == files && shelf.isExpanded == expanded, "Moving the shelf preserves its contents and expansion state")
+    }
+    private func positionAwayFromPointer(_ window: NSWindow) {
+        guard let visible = window.screen?.visibleFrame ?? NSScreen.main?.visibleFrame else { return }
+        let midX = visible.minX + visible.width * (NSEvent.mouseLocation.x < visible.midX ? 0.7 : 0.3)
+        window.setFrameOrigin(NSPoint(x: midX - window.frame.width / 2, y: visible.midY - window.frame.height / 2))
+    }
     private func key(_ code:UInt16,_ characters:String,flags:NSEvent.ModifierFlags=[])async {
         guard let window=shelf?.window else { return }
         let event=NSEvent.keyEvent(with:.keyDown,location:.zero,modifierFlags:flags,timestamp:ProcessInfo.processInfo.systemUptime,windowNumber:window.windowNumber,context:nil,characters:characters,charactersIgnoringModifiers:characters,isARepeat:false,keyCode:code)!
@@ -58,7 +95,9 @@ import AppKit
         }
         fixtures=[text]+images
         let originals=try ([text]+images).map{try Data(contentsOf:$0)}
-        let shelf=FloatShelfController(urls:[text]+images);self.shelf=shelf;shelf.showWindow(nil);await pause()
+        let shelf=FloatShelfController(urls:[text]+images);self.shelf=shelf
+        if let window=shelf.window { positionAwayFromPointer(window) }
+        shelf.showWindow(nil);await pause()
         let window=shelf.window!,views=children(window.contentView!)
         try check(!shelf.isExpanded && abs(window.frame.width-112)<1,"Float starts as a compact stack without window chrome")
         try capture("mac-float-stack.png")
@@ -88,6 +127,10 @@ import AppKit
         try check(shelf.urls.isEmpty,"Delete removes only the selected Float references")
         for (index,url) in ([text]+images).enumerated() { try check(try Data(contentsOf:url)==originals[index],"Original \(url.lastPathComponent) remains byte-for-byte intact") }
         shelf.setExpanded(false);await pause();try capture("mac-float-empty.png")
+        try await dragPaperclip(in: shelf, stack: stack, expanded: false)
+        shelf.append(fixtures)
+        try await dragPaperclip(in: shelf, stack: stack, expanded: true)
+        shelf.setExpanded(false)
     }
 }
 

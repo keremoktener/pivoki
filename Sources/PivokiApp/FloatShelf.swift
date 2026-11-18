@@ -112,7 +112,9 @@ enum FloatShelfViewMode:Int { case icons,list }
         carryGrip.onClick={ [weak self] in self?.toggleExpanded() }
         carryGrip.onDragEnded={ [weak self] in self?.interacting=false;self?.refreshAfterDrag();self?.scheduleHover(false) }
         carryGrip.onInteraction={ [weak self] in self?.interacting=$0;self?.hoverTask?.cancel() }
-        carryGrip.onMoveEnded={ [weak self] in self?.snapAfterMove() }
+        carryGrip.paperclip.onMoving = header.onMoving
+        carryGrip.paperclip.onMoveEnded = header.onMoveEnded
+        carryGrip.paperclip.onClick = carryGrip.onClick
         carryGrip.setAccessibilityIdentifier("float.carry");carryGrip.translatesAutoresizingMaskIntoConstraints=false;header.addSubview(carryGrip)
         collapseButton.font = .systemFont(ofSize:11,weight:.medium);collapseButton.alignment = .center
         collapseButton.bezelStyle = .inline;collapseButton.isBordered=false;collapseButton.target=self;collapseButton.action=#selector(toggleExpanded)
@@ -187,6 +189,8 @@ enum FloatShelfViewMode:Int { case icons,list }
         carryGrip.fileURLs=urls;carryGrip.needsDisplay=true
         carryGrip.setAccessibilityLabel(L10n.text(isExpanded ? "Collapse Float":"Expand Float"))
         carryGrip.toolTip=L10n.text("Drag the stack to carry all files. Drag the paperclip to move Float.")
+        carryGrip.paperclip.toolTip = carryGrip.toolTip
+        carryGrip.setAccessibilityHelp(carryGrip.toolTip)
         collapseButton.toolTip=L10n.text(isExpanded ? "Collapse Float":"Expand Float")
         collapseButton.setAccessibilityLabel(L10n.text(isExpanded ? "Collapse Float":"Expand Float")+" · \(count)")
         // Set here, not once in buildContent, so a language switch relabels them too.
@@ -417,7 +421,39 @@ private final class ShelfPanel:NSPanel {
 @MainActor private final class ShelfMoveHeader:NSView {
     var onMoveEnded:(()->Void)?
     var onMoving:((Bool)->Void)?
-    override func mouseDown(with event:NSEvent) { onMoving?(true);window?.performDrag(with:event);onMoving?(false);onMoveEnded?() }
+    var onClick: (() -> Void)?
+    private var start: (pointer: NSPoint, windowOrigin: NSPoint)?
+    private var didMove = false
+
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+    override func resetCursorRects() {
+        super.resetCursorRects()
+        addCursorRect(bounds, cursor: .openHand)
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        guard let window else { return }
+        start = (window.convertPoint(toScreen: event.locationInWindow), window.frame.origin)
+        didMove = false
+        onMoving?(true)
+    }
+
+    override func mouseDragged(with event: NSEvent) {
+        guard let window, let start else { return }
+        let pointer = window.convertPoint(toScreen: event.locationInWindow)
+        let dx = pointer.x - start.pointer.x, dy = pointer.y - start.pointer.y
+        guard didMove || hypot(dx, dy) > 3 else { return }
+        didMove = true
+        window.setFrameOrigin(NSPoint(x: start.windowOrigin.x + dx, y: start.windowOrigin.y + dy))
+    }
+
+    override func mouseUp(with event: NSEvent) {
+        guard start != nil else { return }
+        start = nil
+        onMoving?(false)
+        if didMove { onMoveEnded?() } else { onClick?() }
+    }
 }
 @MainActor private final class ShelfDropSurface:NSView {
     var onHover:((Bool)->Void)?
@@ -532,13 +568,15 @@ private final class ShelfPanel:NSPanel {
 }
 /// The files are the drag target; the visible paperclip is a separate window grip.
 @MainActor private final class ShelfCarryGrip:NSView,NSDraggingSource {
+    // Covers the silver clip, including its lower tip. The center of the stack
+    // remains available for dragging the file references to another app.
+    let paperclip = ShelfMoveHeader(frame: NSRect(x: 51, y: 22, width: 49, height: 76))
     var urls:(()->[URL])?
     var onDragEnded:(()->Void)?
     var contextMenu:(()->NSMenu?)?
     override func menu(for event:NSEvent)->NSMenu? { contextMenu?() }
     var onClick:(()->Void)?
     var onInteraction:((Bool)->Void)?
-    var onMoveEnded:(()->Void)?
     var fileURLs:[URL]=[] { didSet { if oldValue != fileURLs { loadThumbnails() } } }
     private var thumbnails:[URL:NSImage]=[:]
     private var requests:[QLThumbnailGenerator.Request]=[]
@@ -548,6 +586,7 @@ private final class ShelfPanel:NSPanel {
     override var acceptsFirstResponder:Bool { true }
     override init(frame frameRect:NSRect) {
         super.init(frame:frameRect);setAccessibilityElement(true);setAccessibilityRole(.button)
+        addSubview(paperclip)
         setAccessibilityLabel(L10n.text("Expand Float"))
     }
     required init?(coder:NSCoder) { super.init(coder:coder) }
@@ -593,9 +632,6 @@ private final class ShelfPanel:NSPanel {
     override func mouseDragged(with event:NSEvent) {
         let point=convert(event.locationInWindow,from:nil),values=urls?() ?? []
         guard !sessionActive,hypot(point.x-origin.x,point.y-origin.y)>3 else { return };moved=true
-        if origin.x>62 && origin.y>40 {
-            window?.performDrag(with:event);onInteraction?(false);onMoveEnded?();return
-        }
         guard !values.isEmpty else { return }
         let items=values.enumerated().map { index,url in
             let item=NSDraggingItem(pasteboardWriter:url as NSURL),image=(thumbnails[url] ?? NSWorkspace.shared.icon(forFile:url.path)).copy() as! NSImage;image.size=NSSize(width:42,height:42)
