@@ -62,4 +62,4 @@ On macOS, install Xcode with Swift 6 and Python 3.11 or 3.12 with Tk. From the r
 
 ## License and credits
 
-Original Pivoki code, artwork and documentation are available for personal, noncommercial use. The license prohibits selling or sublicensing these materials. The native Mac and Windows apps build on Nashi’s SwiftUI/AppKit and WPF code. Those portions retain their MIT license, and other third-party components retain their own terms. [Pivoki license](LICENSE) · [Nashi](https://github.com/orkunisitmak/nashi-app/tree/855e2bebebc17e29bf4aa79620e35954283d35ae) · [Third-party notices](Resources/THIRD-PARTY-NOTICES.txt)
+Original Pivoki code, artwork and documentation are available for personal, noncommercial use. The license prohibits selling or sublicensing these materials. The native Mac and Windows apps build on Nashi’s SwiftUI/AppKit and WPF code. Those portions retain their MIT license, and other third-party components retain their own terms. [Pivoki license](LICENSE) · [Third-party notices](Resources/THIRD-PARTY-NOTICES.txt)
