@@ -69,3 +69,23 @@ class Documents(unittest.TestCase):
             with self.assertRaises(Exception), new_file(Path(root,"bad.pdf")) as stage:
                 documents.pdf_archive(src,stage)
             self.assertFalse(Path(root,"bad.pdf").exists())
+
+    def test_detached_signature_requires_acknowledgement(self):
+        from pypdf import PdfWriter
+        from pypdf.generic import ArrayObject, DictionaryObject, NameObject, NumberObject
+        with tempfile.TemporaryDirectory() as root:
+            src=Path(root,"signed.pdf")
+            writer=PdfWriter()
+            writer.add_blank_page(300,300)
+            signature=DictionaryObject({NameObject("/ByteRange"):ArrayObject([NumberObject(i) for i in (0,4,8,10)])})
+            writer.root_object[NameObject("/CustomReference")]=writer._add_object(signature)
+            writer.write(src)
+            before=src.read_bytes()
+            self.assertTrue(documents.inspect_pdf(src)[1])
+            target=Path(root,"copy.pdf")
+            with self.assertRaises(ValueError):
+                documents.working_copy(src,target)
+            self.assertFalse(target.exists())
+            documents.working_copy(src,target,allow_signed=True)
+            self.assertFalse(documents.inspect_pdf(target)[1])
+            self.assertEqual(src.read_bytes(),before)

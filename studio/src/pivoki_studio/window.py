@@ -212,6 +212,8 @@ class Studio(tk.Tk):
             for label,act in (("Nokta ekle","add"),("Noktayı taşı","move"),("Noktayı kaldır","delete"),("Geri al","undo")):
                 ttk.Button(self.options,text=label,command=lambda a=act:self.edit_point(a)).pack(side="top",anchor="w")
             ttk.Button(self.options,text="Şekli kapat",command=self.close_polygon).pack(anchor="w")
+        elif op==PHOTO[6]:
+            self.field("raw_format","Çıktı biçimi","PNG",("PNG","JPEG"))
         elif op==PHOTO[5]:
             enabled = tk.BooleanVar(value=False)
             ttk.Checkbutton(self.options, text="Yeni kopyada EXIF tarihiyle eşitle", variable=enabled).pack(anchor="w")
@@ -494,6 +496,7 @@ class Studio(tk.Tk):
                 return
             ext=".png"
             if op==PHOTO[4]: ext=".ico"
+            if op==PHOTO[6] and v["raw_format"]=="JPEG": ext=".jpg"
             if op==PHOTO[5]: ext=paths[0].suffix
             if op in PDF: ext=".zip" if op==PDF[2] else ".pdf"
             if op in VIDEO: ext=".mp4"
@@ -519,7 +522,20 @@ class Studio(tk.Tk):
                         if op==PHOTO[4]:
                             images.write_ico(pic,work)
                         else:
-                            pic.save(work,format="PNG")
+                            options={}
+                            fmt="PNG"
+                            if op==PHOTO[6]:
+                                from PIL import ImageCms, PngImagePlugin
+                                options["icc_profile"] = ImageCms.ImageCmsProfile(ImageCms.createProfile("sRGB")).tobytes()
+                                if ext==".jpg":
+                                    fmt="JPEG"
+                                    pic=pic.convert("RGB")
+                                    options.update(quality=95,comment=b"Pivoki RAW: camera WB, sRGB")
+                                else:
+                                    metadata=PngImagePlugin.PngInfo()
+                                    metadata.add_text("Processing","Pivoki RAW: camera WB, sRGB")
+                                    options["pnginfo"]=metadata
+                            pic.save(work,format=fmt,**options)
                             with Image.open(work) as check:
                                 check.verify()
                     elif op in UDF:

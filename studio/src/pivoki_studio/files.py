@@ -1,6 +1,7 @@
 """Prepare exports on the destination volume and publish without overwriting."""
 import os
 import shutil
+import sys
 import tempfile
 from contextlib import contextmanager
 from pathlib import Path
@@ -26,7 +27,14 @@ def new_file(target):
 
 def tool(name):
     """Finder-launched bundles do not inherit the user's interactive shell PATH."""
-    path = shutil.which(name)
+    managed = None
+    if name in {"ffmpeg", "ffprobe"}:
+        if sys.platform == "darwin":
+            managed = Path.home() / "Library/Application Support/Pivoki/Tools/media-v1"
+        elif os.name == "nt" and os.environ.get("LOCALAPPDATA"):
+            managed = Path(os.environ["LOCALAPPDATA"]) / "Pivoki/Tools/v1"
+    path = shutil.which(name, path=str(managed)) if managed else None
+    path = path or shutil.which(name)
     if not path and os.name != "nt":
         path = shutil.which(name, path="/opt/homebrew/bin:/usr/local/bin:/usr/bin")
     if not path:

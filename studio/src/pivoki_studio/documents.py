@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 import zipfile
 
 from pypdf import PdfReader, PdfWriter, Transformation
-from pypdf.generic import NameObject, ArrayObject
+from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen.canvas import Canvas
 
@@ -17,24 +17,27 @@ from .images import watermark_overlay
 
 
 def signed(reader):
+    # Visit reachable objects without decoding any content streams. Detached
+    # signature dictionaries and certification timestamps need not be form fields.
+    stack = [reader.root_object]
     visited = set()
-    def visit(ref, inherited=None):
-        obj = ref.get_object()
-        if id(obj) in visited:
-            return False
-        visited.add(id(obj))
-        field = obj.get("/FT", inherited)
-        return field == "/Sig" or any(visit(k, field) for k in obj.get("/Kids", []))
-    root = reader.root_object
-    form = root.get("/AcroForm")
-    if root.get("/Perms") or (form and any(visit(f) for f in form.get_object().get("/Fields", []))):
-        return True
-    for page in reader.pages:
-        for ref in page.get("/Annots", []):
-            annot = ref.get_object()
-            parent = annot.get("/Parent")
-            if annot.get("/FT") == "/Sig" or (parent and parent.get_object().get("/FT") == "/Sig"):
+    while stack:
+        node = stack.pop()
+        if isinstance(node, IndirectObject):
+            key = (node.idnum,node.generation)
+            if key in visited:
+                continue
+            visited.add(key)
+            if len(visited)>250_000:
+                raise ValueError("PDF imza durumu güvenle belirlenemedi.")
+            node = node.get_object()
+        if isinstance(node, DictionaryObject):
+            if (node.get("/Type") in {"/Sig","/DocTimeStamp"} or node.get("/FT")=="/Sig"
+                    or "/ByteRange" in node or "/Perms" in node):
                 return True
+            stack.extend(node.values())
+        elif isinstance(node, ArrayObject):
+            stack.extend(node)
     return False
 
 
@@ -66,11 +69,11 @@ def working_copy(source, target, *, watermark=None, pages="", allow_signed=False
         raise ValueError("İmzasız çalışma kopyası için açık onay gerekir.")
     selection = selected_pages(pages, len(reader.pages))
     writer = PdfWriter()
-    if has_signature:
+    if has_signature or watermark is None:
         # Copy the visible page content into a fresh document, stripping interactive
         # fields (including signatures) and any signature references in the catalog.
         for page in reader.pages:
-            copy = writer.add_page(page, excluded_keys=["/Annots"])
+            writer.add_page(page, excluded_keys=["/Annots", "/PieceInfo"])
     else:
         writer.clone_document_from_reader(reader)
     if watermark:
