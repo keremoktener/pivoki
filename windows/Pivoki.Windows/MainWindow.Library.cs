@@ -47,11 +47,19 @@ public sealed partial class MainWindow
     private void ReuseSelectedLibrary(){if(busy||SelectedLibrary() is not {} entry)return;files.Clear();Add(entry.AvailablePaths);ShowLibrary(false);}
     private void BuildSelectionActions()
     {
-        L10n.SetText(homeTitle,files.Count==0?"Your files. Their next form.":"Let’s make something of it.");
-        shortcutHints.Children.Clear();foreach(var hint in new[]{preferences.Value.ConvertModifier+"  Convert",preferences.Value.ToolsModifier+"  Tools",preferences.Value.ActionsModifier+"  File actions"}){var pill=Card(Text(hint,11,"Muted"));pill.Padding=new(9,5,9,5);pill.Margin=new(0,0,7,0);pill.CornerRadius=new(9);shortcutHints.Children.Add(pill);}
+        L10n.SetText(homeTitle,files.Count==0?"Prepare your files":"Selected files");
+        shortcutHints.Visibility=preferences.Value.ShowModifierHints?Visibility.Visible:Visibility.Collapsed;shortcutHints.Children.Clear();foreach(var hint in new[]{preferences.Value.ConvertModifier+"  Convert",preferences.Value.ToolsModifier+"  Tools",preferences.Value.ActionsModifier+"  File actions"}){var pill=Card(Text(hint,11,"Muted"));pill.Padding=new(9,5,9,5);pill.Margin=new(0,0,7,0);pill.CornerRadius=new(9);shortcutHints.Children.Add(pill);}
         if(files.Count==0)return;
         var stack=new StackPanel();actions.Children.Add(stack);var tiles=new Grid();for(var n=0;n<3;n++)tiles.ColumnDefinitions.Add(new());stack.Children.Add(tiles);
         var formats=FeatureCatalog.Formats(files);var tools=Choices();
+        if(files.Any(Directory.Exists))
+        {
+            var folders=new WrapPanel();
+            folders.Children.Add(Button("Process a folder once",()=>OpenPackages()));
+            folders.Children.Add(Button("Create ZIP",async()=>await RunAsync((destination,progress,token)=>Task.Run<IReadOnlyList<string>>(()=>[DocumentEngine.Zip(files.ToArray(),destination,progress,token)],token),"Create ZIP")));
+            folders.Children.Add(Button("Add to Float",async()=>await PerformFileAction("float",files.ToArray())));
+            stack.Children.Insert(0,folders);
+        }
         void Tile(int column,string title,string subtitle,string symbol,IEnumerable<(string,Action)> commands)
         {
             var label=new DockPanel();var icon=Text(symbol,22,"Gold");icon.Margin=new(0,0,12,0);DockPanel.SetDock(icon,Dock.Left);label.Children.Add(icon);var caption=new StackPanel();var heading=Text(title,14);heading.FontWeight=FontWeights.SemiBold;caption.Children.Add(heading);caption.Children.Add(Text(subtitle,11,"Muted"));label.Children.Add(caption);

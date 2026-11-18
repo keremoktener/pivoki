@@ -44,6 +44,14 @@ public static class PackageEngine
         return start;
     }
 
+    public static Process? StartWatcher(int parentId)
+    {
+        var start = StartInfo("watch");
+        start.ArgumentList.Add("--parent-pid");
+        start.ArgumentList.Add(parentId.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        return Process.Start(start);
+    }
+
     public static void OpenStudio() => Process.Start(StartInfo("studio"))?.Dispose();
 
     public static async Task<PackageReply> RequestAsync(object request)
