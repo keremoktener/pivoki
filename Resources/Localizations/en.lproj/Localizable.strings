@@ -144,6 +144,7 @@
 "A SPLIT POINT LIES OUTSIDE THE VIDEO." = "A SPLIT POINT LIES OUTSIDE THE VIDEO.";
 "A SUBTITLE CUE ENDS BEFORE IT STARTS." = "A SUBTITLE CUE ENDS BEFORE IT STARTS.";
 "A TABLE CELL SPAN IS INVALID OR EXCEEDS 1,024 COLUMNS." = "A TABLE CELL SPAN IS INVALID OR EXCEEDS 1,024 COLUMNS.";
+"A UNIQUE OUTPUT NAME WAS SELECTED" = "A UNIQUE OUTPUT NAME WAS SELECTED";
 "A WAVEFORM REQUIRES A FINITE MEDIA DURATION." = "A WAVEFORM REQUIRES A FINITE MEDIA DURATION.";
 "A discarded clip is outside the range." = "A discarded clip is outside the range.";
 "A few small preferences. A smoother everyday." = "A few small preferences. A smoother everyday.";
@@ -171,6 +172,7 @@
 "A split point lies outside the video." = "A split point lies outside the video.";
 "A subtitle cue ends before it starts." = "A subtitle cue ends before it starts.";
 "A table cell span is invalid or exceeds 1,024 columns." = "A table cell span is invalid or exceeds 1,024 columns.";
+"A unique output name was selected" = "A unique output name was selected";
 "A waveform requires a finite media duration." = "A waveform requires a finite media duration.";
 "ABOUT" = "ABOUT";
 "ACCESSIBILITY" = "ACCESSIBILITY";
@@ -221,6 +223,7 @@
 "AN HTTPS DOWNLOAD IS REQUIRED." = "AN HTTPS DOWNLOAD IS REQUIRED.";
 "AN OUTPUT CANNOT BE A SYMBOLIC LINK." = "AN OUTPUT CANNOT BE A SYMBOLIC LINK.";
 "AN OUTPUT IS OUTSIDE ITS STAGING DIRECTORY." = "AN OUTPUT IS OUTSIDE ITS STAGING DIRECTORY.";
+"AN OUTPUT WITH THIS NAME EXISTS" = "AN OUTPUT WITH THIS NAME EXISTS";
 "ANNOTATE" = "ANNOTATE";
 "ANNOTATE IMAGE" = "ANNOTATE IMAGE";
 "ANNOTATE PHOTO" = "ANNOTATE PHOTO";
@@ -316,6 +319,7 @@
 "An empty output was produced: %lld" = "An empty output was produced: %lld";
 "An output cannot be a symbolic link." = "An output cannot be a symbolic link.";
 "An output is outside its staging directory." = "An output is outside its staging directory.";
+"An output with this name exists" = "An output with this name exists";
 "Annotate" = "Annotate";
 "Annotate Image" = "Annotate Image";
 "Annotate Photo" = "Annotate Photo";
@@ -416,6 +420,7 @@
 "CHANGE SPEED · PIVOKI" = "CHANGE SPEED · PIVOKI";
 "CHANGE VIDEO SPEED" = "CHANGE VIDEO SPEED";
 "CHANGE…" = "CHANGE…";
+"CHANGING THIS PDF CAN INVALIDATE ITS SIGNATURES." = "CHANGING THIS PDF CAN INVALIDATE ITS SIGNATURES.";
 "CHANNELS" = "CHANNELS";
 "CHECK AUTOMATICALLY WHILE PIVOKI IS RUNNING" = "CHECK AUTOMATICALLY WHILE PIVOKI IS RUNNING";
 "CHECK DRAWING SETTINGS" = "CHECK DRAWING SETTINGS";
@@ -593,6 +598,8 @@
 "CREATE COLLAGE" = "CREATE COLLAGE";
 "CREATE OUTPUTS" = "CREATE OUTPUTS";
 "CREATE PDF" = "CREATE PDF";
+"CREATE QR CODE" = "CREATE QR CODE";
+"CREATE UNSIGNED WORKING COPY" = "CREATE UNSIGNED WORKING COPY";
 "CREATE VISUALIZATION" = "CREATE VISUALIZATION";
 "CREATED" = "CREATED";
 "CREATING PACKAGE OUTPUTS" = "CREATING PACKAGE OUTPUTS";
@@ -625,6 +632,7 @@
 "Change Speed · Pivoki" = "Change Speed · Pivoki";
 "Change Video Speed" = "Change Video Speed";
 "Change…" = "Change…";
+"Changing this PDF can invalidate its signatures." = "Changing this PDF can invalidate its signatures.";
 "Channels" = "Channels";
 "Check automatically while Pivoki is running" = "Check automatically while Pivoki is running";
 "Check drawing settings" = "Check drawing settings";
@@ -830,11 +838,13 @@
 "Cover style" = "Cover style";
 "Create Collage" = "Create Collage";
 "Create PDF" = "Create PDF";
+"Create QR code" = "Create QR code";
 "Create a New Float" = "Create a New Float";
 "Create a fine-grained token on GitHub" = "Create a fine-grained token on GitHub";
 "Create a new Float" = "Create a new Float";
 "Create a package to define your output formats and sizes." = "Create a package to define your output formats and sizes.";
 "Create outputs" = "Create outputs";
+"Create unsigned working copy" = "Create unsigned working copy";
 "Create visualization" = "Create visualization";
 "Created" = "Created";
 "Creating package outputs" = "Creating package outputs";
@@ -872,6 +882,7 @@
 "DISMISS" = "DISMISS";
 "DISMISS ERROR" = "DISMISS ERROR";
 "DISMISS PREVIEW ERROR" = "DISMISS PREVIEW ERROR";
+"DOCUMENT BUNDLE EXCLUDED" = "DOCUMENT BUNDLE EXCLUDED";
 "DOCUMENT XML IS TOO LARGE." = "DOCUMENT XML IS TOO LARGE.";
 "DOCUMENTS" = "DOCUMENTS";
 "DONE" = "DONE";
@@ -957,6 +968,7 @@
 "Dismiss error" = "Dismiss error";
 "Dismiss preview error" = "Dismiss preview error";
 "Document XML is too large." = "Document XML is too large.";
+"Document bundle excluded" = "Document bundle excluded";
 "Documents" = "Documents";
 "Done" = "Done";
 "Download" = "Download";
@@ -1112,6 +1124,7 @@
 "FILE ACTIONS" = "FILE ACTIONS";
 "FILE ACTIONS WHEEL" = "FILE ACTIONS WHEEL";
 "FILE ACTIONS · WHILE DRAGGING" = "FILE ACTIONS · WHILE DRAGGING";
+"FILE IS UNAVAILABLE" = "FILE IS UNAVAILABLE";
 "FILE ORDER" = "FILE ORDER";
 "FILE PATHS COPIED." = "FILE PATHS COPIED.";
 "FILE SIZE" = "FILE SIZE";
@@ -1159,6 +1172,7 @@
 "FLOAT OPTIONS" = "FLOAT OPTIONS";
 "FLOAT · 1 FILE" = "FLOAT · 1 FILE";
 "FOLDER ACCESS READY" = "FOLDER ACCESS READY";
+"FOLDER RULES" = "FOLDER RULES";
 "FOLDERS" = "FOLDERS";
 "FONT" = "FONT";
 "FONT SIZE" = "FONT SIZE";
@@ -1189,6 +1203,7 @@
 "File actions" = "File actions";
 "File actions wheel" = "File actions wheel";
 "File actions · while dragging" = "File actions · while dragging";
+"File is unavailable" = "File is unavailable";
 "File order" = "File order";
 "File paths copied." = "File paths copied.";
 "File size" = "File size";
@@ -1241,6 +1256,7 @@
 "Float · %lld files" = "Float · %lld files";
 "Float · 1 file" = "Float · 1 file";
 "Folder access ready" = "Folder access ready";
+"Folder rules" = "Folder rules";
 "Folder · %@" = "Folder · %@";
 "Folder · %lld" = "Folder · %lld";
 "Folders" = "Folders";
@@ -1317,6 +1333,7 @@
 "ICONS" = "ICONS";
 "IMAGE" = "IMAGE";
 "IMAGE COMPRESSION" = "IMAGE COMPRESSION";
+"IMAGE COULD NOT BE READ" = "IMAGE COULD NOT BE READ";
 "IMAGE EDITING CANVAS" = "IMAGE EDITING CANVAS";
 "IMAGE EDITORS, QR AND FOLDER RULES" = "IMAGE EDITORS, QR AND FOLDER RULES";
 "IMAGE EXCEEDS 200 MB." = "IMAGE EXCEEDS 200 MB.";
@@ -1349,6 +1366,7 @@
 "Image" = "Image";
 "Image Compression" = "Image Compression";
 "Image compression" = "Image compression";
+"Image could not be read" = "Image could not be read";
 "Image editing canvas" = "Image editing canvas";
 "Image editors, QR and folder rules" = "Image editors, QR and folder rules";
 "Image exceeds 200 MB." = "Image exceeds 200 MB.";
@@ -1716,6 +1734,7 @@
 "OTHER" = "OTHER";
 "OUTER PADDING" = "OUTER PADDING";
 "OUTPUT" = "OUTPUT";
+"OUTPUT DIRECTORY EXCLUDED" = "OUTPUT DIRECTORY EXCLUDED";
 "OUTPUT FOLDER" = "OUTPUT FOLDER";
 "OUTPUT FORMAT" = "OUTPUT FORMAT";
 "OUTPUT PACKAGES" = "OUTPUT PACKAGES";
@@ -1772,6 +1791,7 @@
 "Outer padding" = "Outer padding";
 "Output" = "Output";
 "Output Packages…" = "Output Packages…";
+"Output directory excluded" = "Output directory excluded";
 "Output folder" = "Output folder";
 "Output format" = "Output format";
 "Output packages" = "Output packages";
@@ -2016,6 +2036,7 @@
 "Quit Pivoki" = "Quit Pivoki";
 "READ QR CODES" = "READ QR CODES";
 "READ QR CODES · PIVOKI" = "READ QR CODES · PIVOKI";
+"READ QR FROM SCREEN" = "READ QR FROM SCREEN";
 "READING WAVEFORM…" = "READING WAVEFORM…";
 "READY" = "READY";
 "READY AFTER YOUR CURRENT TASK" = "READY AFTER YOUR CURRENT TASK";
@@ -2086,6 +2107,7 @@
 "Read QR Codes" = "Read QR Codes";
 "Read QR Codes · Pivoki" = "Read QR Codes · Pivoki";
 "Read QR codes" = "Read QR codes";
+"Read QR from screen" = "Read QR from screen";
 "Reading waveform…" = "Reading waveform…";
 "Ready" = "Ready";
 "Ready after your current task" = "Ready after your current task";
@@ -2321,12 +2343,14 @@
 "STUDIO COULD NOT OPEN" = "STUDIO COULD NOT OPEN";
 "STUDIO…" = "STUDIO…";
 "STYLE" = "STYLE";
+"SUBFOLDERS ARE DISABLED" = "SUBFOLDERS ARE DISABLED";
 "SUBTITLES" = "SUBTITLES";
 "SUBTLE ANIMATIONS" = "SUBTLE ANIMATIONS";
 "SVG EXTERNAL RESOURCES ARE NOT LOADED. EMBED THE RASTER IMAGE FIRST." = "SVG EXTERNAL RESOURCES ARE NOT LOADED. EMBED THE RASTER IMAGE FIRST.";
 "SVG EXTERNAL STYLES ARE NOT LOADED." = "SVG EXTERNAL STYLES ARE NOT LOADED.";
 "SVG external resources are not loaded. Embed the raster image first." = "SVG external resources are not loaded. Embed the raster image first.";
 "SVG external styles are not loaded." = "SVG external styles are not loaded.";
+"SYMBOLIC LINK EXCLUDED" = "SYMBOLIC LINK EXCLUDED";
 "SYSTEM" = "SYSTEM";
 "Sample depth" = "Sample depth";
 "Saturation" = "Saturation";
@@ -2504,8 +2528,10 @@
 "Studio could not open" = "Studio could not open";
 "Studio…" = "Studio…";
 "Style" = "Style";
+"Subfolders are disabled" = "Subfolders are disabled";
 "Subtitles" = "Subtitles";
 "Subtle animations" = "Subtle animations";
+"Symbolic link excluded" = "Symbolic link excluded";
 "System" = "System";
 "TAP COMMAND WHILE DRAGGING TO CROP, COMPRESS, ANNOTATE, AND GIVE YOUR FILE A LITTLE LOVE." = "TAP COMMAND WHILE DRAGGING TO CROP, COMPRESS, ANNOTATE, AND GIVE YOUR FILE A LITTLE LOVE.";
 "TAP CONTROL WHILE DRAGGING TO COPY, MOVE, SHARE, OR CARRY FILES IN A FLOATING SHELF." = "TAP CONTROL WHILE DRAGGING TO COPY, MOVE, SHARE, OR CARRY FILES IN A FLOATING SHELF.";
@@ -2533,6 +2559,7 @@
 "THE ARCHIVE HAS TOO MANY ENTRIES (100,000 LIMIT)." = "THE ARCHIVE HAS TOO MANY ENTRIES (100,000 LIMIT).";
 "THE CLIPPING EXCEEDS 200 MB." = "THE CLIPPING EXCEEDS 200 MB.";
 "THE CLIPPING HAS NO READABLE TEXT. INCLUDE ITS ORIGINAL RESOURCE FORK/APPLEDOUBLE SIDECAR, OR PASTE ITS TEXT INTO PIVOKI." = "THE CLIPPING HAS NO READABLE TEXT. INCLUDE ITS ORIGINAL RESOURCE FORK/APPLEDOUBLE SIDECAR, OR PASTE ITS TEXT INTO PIVOKI.";
+"THE DESTINATION CHANGED. REVIEW THE REVISED PATHS BEFORE CREATING OUTPUTS." = "THE DESTINATION CHANGED. REVIEW THE REVISED PATHS BEFORE CREATING OUTPUTS.";
 "THE DOCUMENT HAS NO EDITABLE BODY." = "THE DOCUMENT HAS NO EDITABLE BODY.";
 "THE DOCUMENT PACKAGE IS TOO LARGE OR CONTAINS DUPLICATE ENTRIES." = "THE DOCUMENT PACKAGE IS TOO LARGE OR CONTAINS DUPLICATE ENTRIES.";
 "THE DOCUMENT XML IS NOT SUPPORTED." = "THE DOCUMENT XML IS NOT SUPPORTED.";
@@ -2553,6 +2580,7 @@
 "THE PASSWORD IS INCORRECT, OR THE ARCHIVE IS DAMAGED." = "THE PASSWORD IS INCORRECT, OR THE ARCHIVE IS DAMAGED.";
 "THE PDF CONTAINS NO PAGES." = "THE PDF CONTAINS NO PAGES.";
 "THE PDF PAGE IS TOO LARGE TO RENDER AT THIS RESOLUTION." = "THE PDF PAGE IS TOO LARGE TO RENDER AT THIS RESOLUTION.";
+"THE PDF PERMISSIONS DO NOT ALLOW THIS OPERATION." = "THE PDF PERMISSIONS DO NOT ALLOW THIS OPERATION.";
 "THE POST DID NOT RETURN READABLE PHOTO DETAILS." = "THE POST DID NOT RETURN READABLE PHOTO DETAILS.";
 "THE PROCESSING TOOL COULD NOT START." = "THE PROCESSING TOOL COULD NOT START.";
 "THE REQUESTED FILE SIZE COULD NOT BE REACHED. CHOOSE A LARGER TARGET." = "THE REQUESTED FILE SIZE COULD NOT BE REACHED. CHOOSE A LARGER TARGET.";
@@ -2674,6 +2702,7 @@
 "The EPUB has no package document." = "The EPUB has no package document.";
 "The PDF contains no pages." = "The PDF contains no pages.";
 "The PDF page is too large to render at this resolution." = "The PDF page is too large to render at this resolution.";
+"The PDF permissions do not allow this operation." = "The PDF permissions do not allow this operation.";
 "The Pages document could not be read: %@." = "The Pages document could not be read: %@.";
 "The Pages document could not be read: %lld." = "The Pages document could not be read: %lld.";
 "The UTF-16 text in %@ is damaged." = "The UTF-16 text in %@ is damaged.";
@@ -2697,6 +2726,7 @@
 "The crop rectangle must fit completely inside the %@ × %lld pixel image." = "The crop rectangle must fit completely inside the %@ × %lld pixel image.";
 "The crop rectangle must fit completely inside the %lld × %@ pixel image." = "The crop rectangle must fit completely inside the %lld × %@ pixel image.";
 "The crop rectangle must fit completely inside the %lld × %lld pixel image." = "The crop rectangle must fit completely inside the %lld × %lld pixel image.";
+"The destination changed. Review the revised paths before creating outputs." = "The destination changed. Review the revised paths before creating outputs.";
 "The document XML is not supported." = "The document XML is not supported.";
 "The document has no editable body." = "The document has no editable body.";
 "The document is missing %@" = "The document is missing %@";
@@ -2832,6 +2862,7 @@
 "UNSAFE DOWNLOAD REDIRECT." = "UNSAFE DOWNLOAD REDIRECT.";
 "UNSAFE UPDATE ENTRY." = "UNSAFE UPDATE ENTRY.";
 "UNSUPPORTED AUDIO FORMAT." = "UNSUPPORTED AUDIO FORMAT.";
+"UNSUPPORTED FORMAT" = "UNSUPPORTED FORMAT";
 "UNSUPPORTED IMAGE FORMAT." = "UNSUPPORTED IMAGE FORMAT.";
 "UNSUPPORTED STREAM/CHAPTER TAG." = "UNSUPPORTED STREAM/CHAPTER TAG.";
 "UP TO 1080P" = "UP TO 1080P";
@@ -2866,6 +2897,7 @@
 "Unsafe download redirect." = "Unsafe download redirect.";
 "Unsafe update entry." = "Unsafe update entry.";
 "Unsupported audio format." = "Unsupported audio format.";
+"Unsupported format" = "Unsupported format";
 "Unsupported image format." = "Unsupported image format.";
 "Unsupported stream/chapter tag." = "Unsupported stream/chapter tag.";
 "Up to 1080p" = "Up to 1080p";
@@ -2886,8 +2918,6 @@
 "Updates are signed and verified before installation. Changing repositories keeps the same trusted signing key. Your settings and files stay with you." = "Updates are signed and verified before installation. Changing repositories keeps the same trusted signing key. Your settings and files stay with you.";
 "Updates are verified before installation. Your settings and recent history stay with you." = "Updates are verified before installation. Your settings and recent history stay with you.";
 "Update…" = "Update…";
-"Upgraded from Tangerine? macOS may still show the previous name. Choose this Pivoki app when adding it to %@." = "Upgraded from Tangerine? macOS may still show the previous name. Choose this Pivoki app when adding it to %@.";
-"Upgraded from Tangerine? macOS may still show the previous name. Choose this Pivoki app when adding it to %lld." = "Upgraded from Tangerine? macOS may still show the previous name. Choose this Pivoki app when adding it to %lld.";
 "Upstream download checksum mismatch. Nothing was installed." = "Upstream download checksum mismatch. Nothing was installed.";
 "Upstream package has no regular %@ executable." = "Upstream package has no regular %@ executable.";
 "Upstream package has no regular %lld executable." = "Upstream package has no regular %lld executable.";
@@ -3039,7 +3069,9 @@
 "Your tools are ready." = "Your tools are ready.";
 "Your tools are ready. Let’s put that next file to good use." = "Your tools are ready. Let’s put that next file to good use.";
 "You’re all set.\nMake something good." = "You’re all set.\nMake something good.";
+"ZIP ORIGINALS" = "ZIP ORIGINALS";
 "ZIP REGULAR FILES AND FOLDERS WITHOUT LINKS (10,000 ITEM LIMIT)." = "ZIP REGULAR FILES AND FOLDERS WITHOUT LINKS (10,000 ITEM LIMIT).";
+"ZIP originals" = "ZIP originals";
 "Zip regular files and folders without links (10,000 item limit)." = "Zip regular files and folders without links (10,000 item limit).";
 "macOS Reduce Motion is on. Pivoki keeps motion off." = "macOS Reduce Motion is on. Pivoki keeps motion off.";
 "macOS could not open the generated media preview." = "macOS could not open the generated media preview.";

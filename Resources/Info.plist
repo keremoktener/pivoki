@@ -22,7 +22,7 @@
 	<key>CFBundleExecutable</key>
 	<string>Pivoki</string>
 	<key>CFBundleIconFile</key>
-	<string>PivokiIcon</string>
+	<string>Pivoki</string>
 	<key>CFBundleIdentifier</key>
 	<string>app.pivoki.desktop</string>
 	<key>CFBundleLocalizations</key>

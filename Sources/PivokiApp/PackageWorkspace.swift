@@ -12,6 +12,7 @@ import SwiftUI
     @Published private(set) var preview: PackageReply?
     @Published private(set) var result: PackageReply?
     @Published private(set) var message = ""
+    @Published private(set) var previousPaths: [String:String] = [:]
     @Published private(set) var busy = false
     @Published private(set) var running = false
     @Published private(set) var cancelling = false
@@ -26,6 +27,7 @@ import SwiftUI
         preview = nil
         result = nil
         message = ""
+        previousPaths = [:]
     }
 
     func load(preferred: String? = nil) async {
@@ -65,18 +67,24 @@ import SwiftUI
     }
 
     func plan() async {
-        guard !busy, let selected, let revision = selected.revision, let destination, !inputs.isEmpty else { return }
+        guard !busy else { return }
         busy = true
         invalidate()
         defer { busy = false }
-        do {
-            let reply = try await PackageRPC().send([
-                "action": "plan", "inputs": inputs.map(\.path), "outputRoot": destination.path,
-                "recursive": recursive, "packageId": selected.id, "revision": revision, "conflictPolicy": conflictPolicy
-            ])
-            guard reply.status == "planned" else { throw PivokiError.failed(reply.error ?? reply.status) }
-            preview = reply
-        } catch { message = error.localizedDescription }
+        do { preview = try await fetchPlan() }
+        catch { message = error.localizedDescription }
+    }
+
+    private func fetchPlan() async throws -> PackageReply {
+        guard let selected, let revision = selected.revision, let destination, !inputs.isEmpty else {
+            throw PivokiError.invalidInput("Choose a package, sources and an output folder.")
+        }
+        let reply = try await PackageRPC().send([
+            "action": "plan", "inputs": inputs.map(\.path), "outputRoot": destination.path,
+            "recursive": recursive, "packageId": selected.id, "revision": revision, "conflictPolicy": conflictPolicy
+        ])
+        guard reply.status == "planned" else { throw PivokiError.failed(reply.error ?? reply.status) }
+        return reply
     }
 
     func cancel() {
@@ -89,6 +97,7 @@ import SwiftUI
         guard !busy, let id = preview?.planId, readyRows > 0, let state, !state.working else { return }
         busy = true
         running = true
+        let approvedRows = preview?.rows ?? []
         let rpc = PackageRPC()
         request = rpc
         state.beginJob("Creating package outputs")
@@ -110,6 +119,14 @@ import SwiftUI
                 state.outputs = (reply.paths ?? []).map { URL(fileURLWithPath: $0) }
                 state.reportSuccess(.filesReady(state.outputs))
             case "cancelled", "skipped": message = reply.error ?? (reply.status == "cancelled" ? "Cancelled" : "Skipped")
+            case "failed" where reply.code == "replan_required":
+                let updated = try await fetchPlan()
+                let prior = Dictionary(approvedRows.compactMap { row in row.target.map { (row.identity, $0) } }, uniquingKeysWith: { old, _ in old })
+                for row in updated.rows ?? [] {
+                    if let new = row.target, let old = prior[row.identity], old != new { previousPaths[new] = old }
+                }
+                preview = updated
+                message = "The destination changed. Review the revised paths before creating outputs."
             default: message = reply.error ?? reply.status
             }
         } catch {
@@ -146,9 +163,9 @@ struct PackageView: View {
                             Text(verbatim: model.selected?.name ?? L10n.text("Package")).font(.headline)
                         }
                     } else { configuration.disabled(model.busy) }
+                    if !model.message.isEmpty { Label { LText(model.message).textSelection(.enabled) } icon: { Image(systemName: "info.circle") } }
                     if let preview = model.preview { previewCard(preview) }
                     if let result = model.result { resultCard(result) }
-                    if !model.message.isEmpty { Label { LText(model.message).textSelection(.enabled) } icon: { Image(systemName: "info.circle") } }
                 }.padding(24)
             }
             Divider()
@@ -159,13 +176,13 @@ struct PackageView: View {
                 }
                 Spacer()
                 if model.running {
-                    Button("Cancel") { model.cancel() }.disabled(model.cancelling)
+                    Button("Cancel") { model.cancel() }.keyboardShortcut(.cancelAction).disabled(model.cancelling)
                 } else if model.preview != nil {
                     Button("Create outputs") { Task { await model.run() } }
-                        .buttonStyle(PivokiButtonStyle(.primary)).disabled(model.readyRows == 0 || state.working)
+                        .keyboardShortcut(.defaultAction).buttonStyle(PivokiButtonStyle(.primary)).disabled(model.readyRows == 0 || state.working)
                 } else {
                     Button("Preview output plan") { Task { await model.plan() } }
-                        .buttonStyle(PivokiButtonStyle(.primary))
+                        .keyboardShortcut(.defaultAction).buttonStyle(PivokiButtonStyle(.primary))
                         .disabled(model.busy || model.selected == nil || model.destination == nil || model.inputs.isEmpty || state.working)
                 }
             }.padding(16)
@@ -225,22 +242,32 @@ struct PackageView: View {
                     ForEach(Array((preview.rows ?? []).enumerated()), id: \.offset) { _, row in
                         VStack(alignment: .leading, spacing: 4) {
                             Text(verbatim: row.source).font(.caption).foregroundStyle(.secondary)
-                            if let original = row.originalTarget, original != row.target {
+                            if let original = row.target.flatMap({ model.previousPaths[$0] }) ?? row.originalTarget, original != row.target {
                                 Text(verbatim: original).strikethrough().font(.caption).foregroundStyle(.secondary)
                             }
                             if let target = row.target { Label { Text(verbatim: target) } icon: { Image(systemName: "arrow.turn.down.right") } }
-                            if let reason = row.reason, !reason.isEmpty { Text(verbatim: reason).font(.caption) }
+                            if let reason = row.reason, !reason.isEmpty { LText(reasonText(reason)).font(.caption) }
                         }.textSelection(.enabled)
                         Divider()
                     }
                     ForEach(Array((preview.skipped ?? []).enumerated()), id: \.offset) { _, item in
-                        Text(verbatim: "\(item.source) · \(item.reason)").font(.callout).textSelection(.enabled)
+                        Text(verbatim: "\(item.source) · \(L10n.text(reasonText(item.reason)))").font(.callout).textSelection(.enabled)
                     }
                 }.padding(.top, 8)
             }
         }.padding(20).pivokiCard(radius: 16)
     }
 
+    private func reasonText(_ code: String) -> String {
+        let descriptions = [
+            "symbolic_link": "Symbolic link excluded", "document_bundle": "Document bundle excluded",
+            "output_directory": "Output directory excluded", "subfolder_excluded": "Subfolders are disabled",
+            "unsupported_format": "Unsupported format", "unreadable": "File is unavailable",
+            "invalid_image": "Image could not be read", "name_conflict": "An output with this name exists",
+            "kept_both": "A unique output name was selected"
+        ]
+        return descriptions[code] ?? code
+    }
     private func resultCard(_ result: PackageReply) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Label("Outputs saved", systemImage: "checkmark.circle.fill").font(.headline)

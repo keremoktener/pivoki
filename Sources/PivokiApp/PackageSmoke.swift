@@ -49,7 +49,17 @@ import SwiftUI
         await model.plan()
         try check(model.readyRows == 40 && model.preview?.skipped?.count == 1, "Plan expected 40 outputs and one excluded text file. " + model.message)
         try capture(PackageView(model: model, state: state), file: "output-plan.png")
+        guard let originalDestination = model.preview?.directory else { throw PivokiError.failed("Missing planned destination.") }
+        let competitor = URL(fileURLWithPath: originalDestination).appendingPathComponent("existing.txt")
+        try fm.createDirectory(at: competitor.deletingLastPathComponent(), withIntermediateDirectories: false)
+        try Data("reserved".utf8).write(to: competitor)
         await model.run()
+        try check(model.result == nil && model.readyRows == 40 && model.previousPaths.count == 40 && state.history.isEmpty,
+                  "The late conflict did not stop for a revised plan: " + model.message)
+        try capture(PackageView(model: model, state: state), file: "revised-plan.png")
+        await model.run()
+        let competingBytes = try Data(contentsOf: competitor)
+        try check(competingBytes == Data("reserved".utf8), "The competing file changed.")
         guard let paths = model.result?.paths, paths.count == 40 else { throw PivokiError.failed("Native package failed. " + model.message) }
         for path in paths {
             let image = try ImageEngine.load(URL(fileURLWithPath: path)), edge = max(image.width, image.height)

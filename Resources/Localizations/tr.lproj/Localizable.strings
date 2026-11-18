@@ -144,6 +144,7 @@
 "A SPLIT POINT LIES OUTSIDE THE VIDEO." = "BİR BÖLME NOKTASI VİDEONUN DIŞINDA KALIYOR.";
 "A SUBTITLE CUE ENDS BEFORE IT STARTS." = "BİR ALTYAZI SATIRI BAŞLAMADAN BİTİYOR.";
 "A TABLE CELL SPAN IS INVALID OR EXCEEDS 1,024 COLUMNS." = "BİR TABLO HÜCRESİNİN GENİŞLİĞİ GEÇERSİZ VEYA 1.024 SÜTUNU AŞIYOR.";
+"A UNIQUE OUTPUT NAME WAS SELECTED" = "BENZERSİZ BİR ÇIKTI ADI SEÇİLDİ";
 "A WAVEFORM REQUIRES A FINITE MEDIA DURATION." = "DALGA BİÇİMİ İÇİN MEDYANIN SÜRESİ BELLİ OLMALI.";
 "A discarded clip is outside the range." = "Çıkarılan bir klip aralığın dışında.";
 "A few small preferences. A smoother everyday." = "Birkaç küçük tercih. Daha akıcı bir gün.";
@@ -171,6 +172,7 @@
 "A split point lies outside the video." = "Bir bölme noktası videonun dışında kalıyor.";
 "A subtitle cue ends before it starts." = "Bir altyazı satırı başlamadan bitiyor.";
 "A table cell span is invalid or exceeds 1,024 columns." = "Bir tablo hücresinin genişliği geçersiz veya 1.024 sütunu aşıyor.";
+"A unique output name was selected" = "Benzersiz bir çıktı adı seçildi";
 "A waveform requires a finite media duration." = "Dalga biçimi için medyanın süresi belli olmalı.";
 "ABOUT" = "HAKKINDA";
 "ACCESSIBILITY" = "ERİŞİLEBİLİRLİK";
@@ -221,6 +223,7 @@
 "AN HTTPS DOWNLOAD IS REQUIRED." = "İNDİRME HTTPS ÜZERİNDEN YAPILMALI.";
 "AN OUTPUT CANNOT BE A SYMBOLIC LINK." = "ÇIKTI SEMBOLİK BAĞLANTI OLAMAZ.";
 "AN OUTPUT IS OUTSIDE ITS STAGING DIRECTORY." = "BİR ÇIKTI GEÇİCİ KLASÖRÜNÜN DIŞINDA KALDI.";
+"AN OUTPUT WITH THIS NAME EXISTS" = "BU ADDA BİR ÇIKTI VAR";
 "ANNOTATE" = "İŞARETLE";
 "ANNOTATE IMAGE" = "GÖRSELİ İŞARETLE";
 "ANNOTATE PHOTO" = "FOTOĞRAFI İŞARETLE";
@@ -316,6 +319,7 @@
 "An empty output was produced: %lld" = "Boş bir çıktı oluştu: %lld";
 "An output cannot be a symbolic link." = "Çıktı sembolik bağlantı olamaz.";
 "An output is outside its staging directory." = "Bir çıktı geçici klasörünün dışında kaldı.";
+"An output with this name exists" = "Bu adda bir çıktı var";
 "Annotate" = "İşaretle";
 "Annotate Image" = "Görseli İşaretle";
 "Annotate Photo" = "Fotoğrafı İşaretle";
@@ -416,6 +420,7 @@
 "CHANGE SPEED · PIVOKI" = "HIZI DEĞİŞTİR · PIVOKI";
 "CHANGE VIDEO SPEED" = "VİDEO HIZINI DEĞİŞTİR";
 "CHANGE…" = "DEĞİŞTİR…";
+"CHANGING THIS PDF CAN INVALIDATE ITS SIGNATURES." = "BU PDF’Yİ DEĞİŞTİRMEK İMZALARINI GEÇERSİZ KILABİLİR.";
 "CHANNELS" = "KANALLAR";
 "CHECK AUTOMATICALLY WHILE PIVOKI IS RUNNING" = "PIVOKI ÇALIŞIRKEN OTOMATİK DENETLE";
 "CHECK DRAWING SETTINGS" = "ÇİZİM AYARLARINI KONTROL ET";
@@ -593,6 +598,8 @@
 "CREATE COLLAGE" = "KOLAJ OLUŞTUR";
 "CREATE OUTPUTS" = "ÇIKTILARI OLUŞTUR";
 "CREATE PDF" = "PDF OLUŞTUR";
+"CREATE QR CODE" = "QR OLUŞTUR";
+"CREATE UNSIGNED WORKING COPY" = "İMZASIZ ÇALIŞMA KOPYASI OLUŞTUR";
 "CREATE VISUALIZATION" = "GÖRSELLEŞTİRME OLUŞTUR";
 "CREATED" = "OLUŞTURULMA";
 "CREATING PACKAGE OUTPUTS" = "PAKET ÇIKTILARI OLUŞTURULUYOR";
@@ -625,6 +632,7 @@
 "Change Speed · Pivoki" = "Hızı Değiştir · Pivoki";
 "Change Video Speed" = "Video Hızını Değiştir";
 "Change…" = "Değiştir…";
+"Changing this PDF can invalidate its signatures." = "Bu PDF’yi değiştirmek imzalarını geçersiz kılabilir.";
 "Channels" = "Kanallar";
 "Check automatically while Pivoki is running" = "Pivoki çalışırken otomatik denetle";
 "Check drawing settings" = "Çizim ayarlarını kontrol et";
@@ -830,11 +838,13 @@
 "Cover style" = "Kaplama stili";
 "Create Collage" = "Kolaj Oluştur";
 "Create PDF" = "PDF Oluştur";
+"Create QR code" = "QR oluştur";
 "Create a New Float" = "Yeni Yüzen Pencere Oluştur";
 "Create a fine-grained token on GitHub" = "GitHub’da ince ayarlı token oluştur";
 "Create a new Float" = "Yeni yüzen pencere oluştur";
 "Create a package to define your output formats and sizes." = "Çıktı biçimlerini ve boyutlarını tanımlamak için paket oluştur.";
 "Create outputs" = "Çıktıları oluştur";
+"Create unsigned working copy" = "İmzasız çalışma kopyası oluştur";
 "Create visualization" = "Görselleştirme oluştur";
 "Created" = "Oluşturulma";
 "Creating package outputs" = "Paket çıktıları oluşturuluyor";
@@ -872,6 +882,7 @@
 "DISMISS" = "KAPAT";
 "DISMISS ERROR" = "HATAYI KAPAT";
 "DISMISS PREVIEW ERROR" = "ÖNİZLEME HATASINI KAPAT";
+"DOCUMENT BUNDLE EXCLUDED" = "BELGE PAKETİ KAPSAM DIŞINDA";
 "DOCUMENT XML IS TOO LARGE." = "BELGE XML'İ ÇOK BÜYÜK.";
 "DOCUMENTS" = "BELGELER";
 "DONE" = "BİTTİ";
@@ -957,6 +968,7 @@
 "Dismiss error" = "Hatayı kapat";
 "Dismiss preview error" = "Önizleme hatasını kapat";
 "Document XML is too large." = "Belge XML'i çok büyük.";
+"Document bundle excluded" = "Belge paketi kapsam dışında";
 "Documents" = "Belgeler";
 "Done" = "Bitti";
 "Download" = "İndir";
@@ -1112,6 +1124,7 @@
 "FILE ACTIONS" = "DOSYA İŞLEMLERİ";
 "FILE ACTIONS WHEEL" = "DOSYA İŞLEMLERİ ÇARKI";
 "FILE ACTIONS · WHILE DRAGGING" = "DOSYA İŞLEMLERİ · SÜRÜKLERKEN";
+"FILE IS UNAVAILABLE" = "DOSYAYA ERİŞİLEMİYOR";
 "FILE ORDER" = "DOSYA SIRASI";
 "FILE PATHS COPIED." = "DOSYA YOLLARI KOPYALANDI.";
 "FILE SIZE" = "DOSYA BOYUTU";
@@ -1159,6 +1172,7 @@
 "FLOAT OPTIONS" = "FLOAT SEÇENEKLERİ";
 "FLOAT · 1 FILE" = "YÜZEN PENCERE · 1 DOSYA";
 "FOLDER ACCESS READY" = "KLASÖR ERİŞİMİ HAZIR";
+"FOLDER RULES" = "KLASÖR KURALLARI";
 "FOLDERS" = "KLASÖRLER";
 "FONT" = "YAZI TİPİ";
 "FONT SIZE" = "YAZI BOYUTU";
@@ -1189,6 +1203,7 @@
 "File actions" = "Dosya işlemleri";
 "File actions wheel" = "Dosya işlemleri çarkı";
 "File actions · while dragging" = "Dosya işlemleri · sürüklerken";
+"File is unavailable" = "Dosyaya erişilemiyor";
 "File order" = "Dosya sırası";
 "File paths copied." = "Dosya yolları kopyalandı.";
 "File size" = "Dosya boyutu";
@@ -1241,6 +1256,7 @@
 "Float · %lld files" = "Yüzen Pencere · %lld dosya";
 "Float · 1 file" = "Yüzen Pencere · 1 dosya";
 "Folder access ready" = "Klasör erişimi hazır";
+"Folder rules" = "Klasör kuralları";
 "Folder · %@" = "Klasör · %@";
 "Folder · %lld" = "Klasör · %lld";
 "Folders" = "Klasörler";
@@ -1317,6 +1333,7 @@
 "ICONS" = "SİMGELER";
 "IMAGE" = "GÖRSEL";
 "IMAGE COMPRESSION" = "GÖRSEL SIKIŞTIRMA";
+"IMAGE COULD NOT BE READ" = "GÖRSEL OKUNAMADI";
 "IMAGE EDITING CANVAS" = "GÖRSEL DÜZENLEME TUVALİ";
 "IMAGE EDITORS, QR AND FOLDER RULES" = "GÖRSEL ARAÇLARI, QR VE KLASÖR KURALLARI";
 "IMAGE EXCEEDS 200 MB." = "GÖRSEL 200 MB'I AŞIYOR.";
@@ -1349,6 +1366,7 @@
 "Image" = "Görsel";
 "Image Compression" = "Görsel Sıkıştırma";
 "Image compression" = "Görsel sıkıştırma";
+"Image could not be read" = "Görsel okunamadı";
 "Image editing canvas" = "Görsel düzenleme tuvali";
 "Image editors, QR and folder rules" = "Görsel araçları, QR ve klasör kuralları";
 "Image exceeds 200 MB." = "Görsel 200 MB'ı aşıyor.";
@@ -1716,6 +1734,7 @@
 "OTHER" = "DİĞER";
 "OUTER PADDING" = "DIŞ BOŞLUK";
 "OUTPUT" = "ÇIKTI";
+"OUTPUT DIRECTORY EXCLUDED" = "ÇIKTI KLASÖRÜ KAPSAM DIŞINDA";
 "OUTPUT FOLDER" = "ÇIKTI KLASÖRÜ";
 "OUTPUT FORMAT" = "ÇIKTI BİÇİMİ";
 "OUTPUT PACKAGES" = "ÇIKTI PAKETLERİ";
@@ -1772,6 +1791,7 @@
 "Outer padding" = "Dış boşluk";
 "Output" = "Çıktı";
 "Output Packages…" = "Çıktı paketleri…";
+"Output directory excluded" = "Çıktı klasörü kapsam dışında";
 "Output folder" = "Çıktı klasörü";
 "Output format" = "Çıktı biçimi";
 "Output packages" = "Çıktı paketleri";
@@ -2016,6 +2036,7 @@
 "Quit Pivoki" = "Pivoki'den Çık";
 "READ QR CODES" = "QR KODLARINI OKU";
 "READ QR CODES · PIVOKI" = "QR KODLARINI OKU · PIVOKI";
+"READ QR FROM SCREEN" = "EKRANDAN QR OKU";
 "READING WAVEFORM…" = "DALGA BİÇİMİ OKUNUYOR…";
 "READY" = "HAZIR";
 "READY AFTER YOUR CURRENT TASK" = "MEVCUT İŞLEM BİTİNCE HAZIR";
@@ -2086,6 +2107,7 @@
 "Read QR Codes" = "QR Kodlarını Oku";
 "Read QR Codes · Pivoki" = "QR Kodlarını Oku · Pivoki";
 "Read QR codes" = "QR kodlarını oku";
+"Read QR from screen" = "Ekrandan QR oku";
 "Reading waveform…" = "Dalga biçimi okunuyor…";
 "Ready" = "Hazır";
 "Ready after your current task" = "Mevcut işlem bitince hazır";
@@ -2321,12 +2343,14 @@
 "STUDIO COULD NOT OPEN" = "STÜDYO AÇILAMADI";
 "STUDIO…" = "STÜDYO…";
 "STYLE" = "STİL";
+"SUBFOLDERS ARE DISABLED" = "ALT KLASÖRLER DAHİL EDİLMEDİ";
 "SUBTITLES" = "ALTYAZILAR";
 "SUBTLE ANIMATIONS" = "HAFİF ANİMASYONLAR";
 "SVG EXTERNAL RESOURCES ARE NOT LOADED. EMBED THE RASTER IMAGE FIRST." = "SVG DIŞ KAYNAKLARI YÜKLENMEZ. ÖNCE GÖRSELİ SVG DOSYASINA GÖM.";
 "SVG EXTERNAL STYLES ARE NOT LOADED." = "SVG DIŞ STİLLERİ YÜKLENMEZ.";
 "SVG external resources are not loaded. Embed the raster image first." = "SVG dış kaynakları yüklenmez. Önce görseli SVG dosyasına göm.";
 "SVG external styles are not loaded." = "SVG dış stilleri yüklenmez.";
+"SYMBOLIC LINK EXCLUDED" = "SEMBOLİK BAĞLANTI KAPSAM DIŞINDA";
 "SYSTEM" = "SİSTEM";
 "Sample depth" = "Örnek derinliği";
 "Saturation" = "Doygunluk";
@@ -2504,8 +2528,10 @@
 "Studio could not open" = "Stüdyo açılamadı";
 "Studio…" = "Stüdyo…";
 "Style" = "Stil";
+"Subfolders are disabled" = "Alt klasörler dahil edilmedi";
 "Subtitles" = "Altyazılar";
 "Subtle animations" = "Hafif animasyonlar";
+"Symbolic link excluded" = "Sembolik bağlantı kapsam dışında";
 "System" = "Sistem";
 "TAP COMMAND WHILE DRAGGING TO CROP, COMPRESS, ANNOTATE, AND GIVE YOUR FILE A LITTLE LOVE." = "KIRPMAK, SIKIŞTIRMAK, İŞARETLEMEK VE DOSYANA BİRAZ ÖZEN GÖSTERMEK İÇİN SÜRÜKLERKEN COMMAND'A BAS.";
 "TAP CONTROL WHILE DRAGGING TO COPY, MOVE, SHARE, OR CARRY FILES IN A FLOATING SHELF." = "KOPYALAMAK, TAŞIMAK, PAYLAŞMAK VEYA DOSYALARI YÜZEN BİR PENCEREDE YANINDA TAŞIMAK İÇİN SÜRÜKLERKEN CONTROL'E BAS.";
@@ -2533,6 +2559,7 @@
 "THE ARCHIVE HAS TOO MANY ENTRIES (100,000 LIMIT)." = "ARŞİVDE ÇOK FAZLA ÖĞE VAR (SINIR 100.000).";
 "THE CLIPPING EXCEEDS 200 MB." = "METİN KIRPINTISI 200 MB'I AŞIYOR.";
 "THE CLIPPING HAS NO READABLE TEXT. INCLUDE ITS ORIGINAL RESOURCE FORK/APPLEDOUBLE SIDECAR, OR PASTE ITS TEXT INTO PIVOKI." = "METİN KIRPINTISINDA OKUNABİLİR METİN YOK. ORİJİNAL RESOURCE FORK/APPLEDOUBLE DOSYASINI DA EKLE VEYA METNİNİ PIVOKI'YE YAPIŞTIR.";
+"THE DESTINATION CHANGED. REVIEW THE REVISED PATHS BEFORE CREATING OUTPUTS." = "HEDEF DEĞİŞTİ. ÇIKTILARI OLUŞTURMADAN ÖNCE GÜNCEL YOLLARI İNCELE.";
 "THE DOCUMENT HAS NO EDITABLE BODY." = "BELGEDE DÜZENLENEBİLİR BİR İÇERİK YOK.";
 "THE DOCUMENT PACKAGE IS TOO LARGE OR CONTAINS DUPLICATE ENTRIES." = "BELGE PAKETİ ÇOK BÜYÜK VEYA YİNELENEN ÖĞELER İÇERİYOR.";
 "THE DOCUMENT XML IS NOT SUPPORTED." = "BELGENİN XML İÇERİĞİ DESTEKLENMİYOR.";
@@ -2553,6 +2580,7 @@
 "THE PASSWORD IS INCORRECT, OR THE ARCHIVE IS DAMAGED." = "PAROLA YANLIŞ YA DA ARŞİV BOZUK.";
 "THE PDF CONTAINS NO PAGES." = "PDF'DE SAYFA YOK.";
 "THE PDF PAGE IS TOO LARGE TO RENDER AT THIS RESOLUTION." = "PDF SAYFASI BU ÇÖZÜNÜRLÜKTE İŞLENEMEYECEK KADAR BÜYÜK.";
+"THE PDF PERMISSIONS DO NOT ALLOW THIS OPERATION." = "PDF İZİNLERİ BU İŞLEME İZİN VERMİYOR.";
 "THE POST DID NOT RETURN READABLE PHOTO DETAILS." = "GÖNDERİ OKUNABİLİR FOTOĞRAF BİLGİSİ DÖNDÜRMEDİ.";
 "THE PROCESSING TOOL COULD NOT START." = "İŞLEME ARACI BAŞLATILAMADI.";
 "THE REQUESTED FILE SIZE COULD NOT BE REACHED. CHOOSE A LARGER TARGET." = "İSTENEN DOSYA BOYUTUNA İNİLEMEDİ. DAHA BÜYÜK BİR HEDEF SEÇ.";
@@ -2674,6 +2702,7 @@
 "The EPUB has no package document." = "EPUB dosyasında paket belgesi yok.";
 "The PDF contains no pages." = "PDF'de sayfa yok.";
 "The PDF page is too large to render at this resolution." = "PDF sayfası bu çözünürlükte işlenemeyecek kadar büyük.";
+"The PDF permissions do not allow this operation." = "PDF izinleri bu işleme izin vermiyor.";
 "The Pages document could not be read: %@." = "Pages belgesi okunamadı: %@.";
 "The Pages document could not be read: %lld." = "Pages belgesi okunamadı: %lld.";
 "The UTF-16 text in %@ is damaged." = "%@ içindeki UTF-16 metin bozuk.";
@@ -2697,6 +2726,7 @@
 "The crop rectangle must fit completely inside the %@ × %lld pixel image." = "Kırpma alanı %@ × %lld piksellik görselin tamamen içinde kalmalı.";
 "The crop rectangle must fit completely inside the %lld × %@ pixel image." = "Kırpma alanı %lld × %@ piksellik görselin tamamen içinde kalmalı.";
 "The crop rectangle must fit completely inside the %lld × %lld pixel image." = "Kırpma alanı %lld × %lld piksellik görselin tamamen içinde kalmalı.";
+"The destination changed. Review the revised paths before creating outputs." = "Hedef değişti. Çıktıları oluşturmadan önce güncel yolları incele.";
 "The document XML is not supported." = "Belgenin XML içeriği desteklenmiyor.";
 "The document has no editable body." = "Belgede düzenlenebilir bir içerik yok.";
 "The document is missing %@" = "Belgede şu öğe eksik: %@";
@@ -2832,6 +2862,7 @@
 "UNSAFE DOWNLOAD REDIRECT." = "GÜVENLİ OLMAYAN İNDİRME YÖNLENDİRMESİ.";
 "UNSAFE UPDATE ENTRY." = "GÜNCELLEMEDE GÜVENLİ OLMAYAN BİR ÖĞE VAR.";
 "UNSUPPORTED AUDIO FORMAT." = "DESTEKLENMEYEN SES BİÇİMİ.";
+"UNSUPPORTED FORMAT" = "BİÇİM DESTEKLENMİYOR";
 "UNSUPPORTED IMAGE FORMAT." = "DESTEKLENMEYEN GÖRSEL BİÇİMİ.";
 "UNSUPPORTED STREAM/CHAPTER TAG." = "DESTEKLENMEYEN AKIŞ VEYA BÖLÜM ETİKETİ.";
 "UP TO 1080P" = "EN FAZLA 1080P";
@@ -2866,6 +2897,7 @@
 "Unsafe download redirect." = "Güvenli olmayan indirme yönlendirmesi.";
 "Unsafe update entry." = "Güncellemede güvenli olmayan bir öğe var.";
 "Unsupported audio format." = "Desteklenmeyen ses biçimi.";
+"Unsupported format" = "Biçim desteklenmiyor";
 "Unsupported image format." = "Desteklenmeyen görsel biçimi.";
 "Unsupported stream/chapter tag." = "Desteklenmeyen akış veya bölüm etiketi.";
 "Up to 1080p" = "En fazla 1080p";
@@ -2886,8 +2918,6 @@
 "Updates are signed and verified before installation. Changing repositories keeps the same trusted signing key. Your settings and files stay with you." = "Güncellemeler imzalanır ve kurulmadan önce doğrulanır. Depo değişse de güvenilir imza anahtarı aynı kalır. Ayarların ve dosyaların korunur.";
 "Updates are verified before installation. Your settings and recent history stay with you." = "Güncellemeler kurulmadan önce doğrulanır. Ayarların ve son işlem geçmişin korunur.";
 "Update…" = "Güncelle…";
-"Upgraded from Tangerine? macOS may still show the previous name. Choose this Pivoki app when adding it to %@." = "Tangerine'den mi geçtin? macOS eski adı gösterebilir. %@ iznine eklerken bu Pivoki uygulamasını seç.";
-"Upgraded from Tangerine? macOS may still show the previous name. Choose this Pivoki app when adding it to %lld." = "Tangerine'den mi geçtin? macOS eski adı gösterebilir. %lld iznine eklerken bu Pivoki uygulamasını seç.";
 "Upstream download checksum mismatch. Nothing was installed." = "İndirilen aracın sağlama toplamı eşleşmiyor. Hiçbir şey kurulmadı.";
 "Upstream package has no regular %@ executable." = "İndirilen pakette normal bir %@ çalıştırılabilir dosyası yok.";
 "Upstream package has no regular %lld executable." = "İndirilen pakette normal bir %lld çalıştırılabilir dosyası yok.";
@@ -3039,7 +3069,9 @@
 "Your tools are ready." = "Araçların hazır.";
 "Your tools are ready. Let’s put that next file to good use." = "Araçların hazır. Sıradaki dosyayı birlikte hazırlayalım.";
 "You’re all set.\nMake something good." = "Her şey hazır.\nGüzel bir şey yap.";
+"ZIP ORIGINALS" = "ÖZGÜNLERİ ZIP OLARAK PAYLAŞ";
 "ZIP REGULAR FILES AND FOLDERS WITHOUT LINKS (10,000 ITEM LIMIT)." = "BAĞLANTI İÇERMEYEN NORMAL DOSYA VE KLASÖRLERİ SIKIŞTIR (SINIR 10.000 ÖĞE).";
+"ZIP originals" = "Özgünleri ZIP olarak paylaş";
 "Zip regular files and folders without links (10,000 item limit)." = "Bağlantı içermeyen normal dosya ve klasörleri sıkıştır (sınır 10.000 öğe).";
 "macOS Reduce Motion is on. Pivoki keeps motion off." = "macOS Hareketi Azalt açık. Pivoki animasyonları kapalı tutar.";
 "macOS could not open the generated media preview." = "macOS oluşturulan medya önizlemesini açamadı.";

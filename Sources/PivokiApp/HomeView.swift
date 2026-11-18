@@ -51,8 +51,13 @@ struct HomeView:View {
                     dropZone.pivokiEntrance(delay:0.04)
                     HStack(spacing: 12) {
                         workspaceAction("Output packages", detail: "Plan sizes, formats and destinations", symbol: "square.3.layers.3d", primary: true) { state.onPackages?(nil) }
-                        workspaceAction("Studio", detail: "Image editors, QR and folder rules", symbol: "slider.horizontal.3", primary: false) { state.onStudio?() }
+                        workspaceAction("Studio", detail: "Image editors, QR and folder rules", symbol: "slider.horizontal.3", primary: false) { state.onStudio?(nil) }
                     }
+                    HStack(spacing: 12) {
+                        Button { state.onStudio?("qr") } label: { Label("Create QR code", systemImage: "qrcode") }
+                        Button { state.onStudio?("scan") } label: { Label("Read QR from screen", systemImage: "viewfinder") }
+                        Button { state.onStudio?("rules") } label: { Label("Folder rules", systemImage: "folder.badge.gearshape") }
+                    }.buttonStyle(PivokiButtonStyle(.secondary, compact: true))
                     Button { state.onWebDownload?(WebLinkPayload.clipboardLink(),.video) } label:{
                         HStack(spacing:12) {
                             Image(systemName:"arrow.down.circle.fill").font(.system(size:25)).foregroundStyle(Color.pivoki)

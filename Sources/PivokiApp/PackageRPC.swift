@@ -19,6 +19,8 @@ struct OutputRow: Decodable {
     let source: String
     let target: String?
     let originalTarget: String?
+    let outputIndex: Int?
+    var identity: String { source + "\u{0}" + String(outputIndex ?? -1) }
     let status: String
     let reason: String?
 }
@@ -43,10 +45,10 @@ struct PackageReply: Decodable {
 }
 
 enum StudioLauncher {
-    @MainActor static func open(inputs: [URL], onExit: @escaping @MainActor (Int32) -> Void) throws {
+    @MainActor static func open(tool: String?, inputs: [URL], onExit: @escaping @MainActor (Int32) -> Void) throws {
         let process = Process()
         process.executableURL = try PackageEngine.executable()
-        process.arguments = ["studio"] + inputs.filter(\.isFileURL).map(\.path)
+        process.arguments = ["studio"] + (tool.map { ["--tool", $0] } ?? []) + inputs.filter(\.isFileURL).map(\.path)
         process.terminationHandler = { process in
             guard process.terminationStatus != 0 else { return }
             Task { @MainActor in onExit(process.terminationStatus) }

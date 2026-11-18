@@ -138,9 +138,13 @@ enum StatusMenuItem:String,CaseIterable,Identifiable {
         NSApp.activate(ignoringOtherApps: true)
         Task { await packages.load(preferred: preferred) }
     }
-    @objc func openStudio() {
+    @objc func openStudio() { presentStudio(tool: nil) }
+    @objc func createQR() { presentStudio(tool: "qr") }
+    @objc func scanScreen() { presentStudio(tool: "scan") }
+    @objc func showRules() { presentStudio(tool: "rules") }
+    private func presentStudio(tool: String?, files: [URL]? = nil) {
         do {
-            try StudioLauncher.open(inputs: state.inputs) { [weak self] code in
+            try StudioLauncher.open(tool: tool, inputs: files ?? state.inputs) { [weak self] code in
                 self?.showHome(); self?.state.error = L10n.text("Studio could not open") + " (\(code))"
             }
         } catch { showHome(); state.error = error.localizedDescription }
@@ -185,6 +189,9 @@ enum StatusMenuItem:String,CaseIterable,Identifiable {
         menu.addItem(withTitle:"Download Link…",action:#selector(showDownloadLink),keyEquivalent:"")
         menu.addItem(withTitle:"Output Packages…",action:#selector(openPackages),keyEquivalent:"")
         menu.addItem(withTitle:"Studio…",action:#selector(openStudio),keyEquivalent:"")
+        menu.addItem(withTitle:"Create QR code",action:#selector(createQR),keyEquivalent:"")
+        menu.addItem(withTitle:"Read QR from screen",action:#selector(scanScreen),keyEquivalent:"")
+        menu.addItem(withTitle:"Folder rules",action:#selector(showRules),keyEquivalent:"")
         menu.addItem(withTitle:"Wheel settings",action:#selector(showWheelSettings),keyEquivalent:"")
         menu.addItem(withTitle:"Enable Pivoki",action:#selector(toggleEnabled),keyEquivalent:"").state = UserDefaults.standard.bool(forKey:"enabled") ? .on : .off
         menu.addItem(withTitle:"Settings…",action:#selector(showSettings),keyEquivalent:",")
@@ -217,7 +224,21 @@ enum StatusMenuItem:String,CaseIterable,Identifiable {
         state.onWebDrop = { [weak self] urls in self?.wheel.show(inputs:urls,mode:.tools,at:NSEvent.mouseLocation,keyboard:true) }
         state.onPackages = { [weak self] id in self?.presentPackages(preferred: id) }
         state.onAllActions = { [weak self] in self?.showHome() }
-        state.onStudio = { [weak self] in self?.openStudio() }
+        state.onSignedPDF = { [weak self] file, paths in
+            let alert = NSAlert()
+            alert.messageText = L10n.text("Changing this PDF can invalidate its signatures.")
+            alert.informativeText = file
+            alert.addButton(withTitle: L10n.text("Cancel"))
+            alert.addButton(withTitle: L10n.text("ZIP originals"))
+            alert.addButton(withTitle: L10n.text("Create unsigned working copy"))
+            NSApp.activate(ignoringOtherApps: true)
+            switch alert.runModal() {
+            case .alertSecondButtonReturn: self?.presentStudio(tool: "pdf-zip", files: paths)
+            case .alertThirdButtonReturn: self?.presentStudio(tool: "pdf-copy", files: paths)
+            default: break
+            }
+        }
+        state.onStudio = { [weak self] tool in self?.presentStudio(tool: tool) }
         Task { await packages.load(); await state.refreshPackageHistory() }
         NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification).sink { [weak self] _ in
             guard let self else { return }; Task { await self.packages.load(); await self.state.refreshPackageHistory() }

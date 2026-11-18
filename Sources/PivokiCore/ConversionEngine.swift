@@ -5,6 +5,7 @@ public enum ConversionEngine {
         guard !request.inputs.isEmpty else { throw PivokiError.invalidInput("Choose at least one file.") }
         for url in request.inputs { guard url.isFileURL,FileManager.default.fileExists(atPath:url.path) else { throw PivokiError.invalidInput("File not found: \(url.lastPathComponent)") } }
         try token.check()
+        try PDFInputProtection.check(request, token: token)
         let transaction=ExportTransaction()
         defer { transaction.cleanUp() }
         let groups:[[URL]]

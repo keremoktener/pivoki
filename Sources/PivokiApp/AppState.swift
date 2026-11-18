@@ -46,7 +46,8 @@ struct JobRecord:Codable,Identifiable {
     var onOpenWheel:(()->Void)?
     @Published var wheelPackages: [OutputPackage] = []
     var onPackages: ((String?) -> Void)?
-    var onStudio: (() -> Void)?
+    var onStudio: ((String?) -> Void)?
+    var onSignedPDF: ((String, [URL]) -> Void)?
     var onAllActions: (() -> Void)?
     var onChooseFiles:(()->Void)?
     var onSettings:(()->Void)?
@@ -162,6 +163,9 @@ struct JobRecord:Codable,Identifiable {
                 persistHistory()
                 onSuccess?(.filesReady(result))
                 if options.revealInFinder { NSWorkspace.shared.activateFileViewerSelecting(result) }
+            } catch let notice as PDFSignatureNotice {
+                stopProgressUpdates()
+                if !cancel.isCancelled { onSignedPDF?(notice.fileName, selected) }
             } catch { stopProgressUpdates();if !cancel.isCancelled { self.error=error.localizedDescription } }
         }
     }
