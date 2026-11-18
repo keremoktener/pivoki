@@ -16,6 +16,7 @@ from PIL import Image, ImageGrab, ImageOps, ImageTk
 from . import documents, images, media, qr, rules
 from .files import new_file, tool
 from .rules_panel import RulePanel
+from .language import Language
 
 PHOTO = ("Açıklama şeridi","Filigran","Fonu kaldır","Çokgen","ICO","EXIF zamanı","Kamera RAW")
 PDF = ("PDF filigranı","İmzasız çalışma kopyası","Özgünleri ZIP yap","PDF sayfalarını SVG yap","PDF/A-2b")
@@ -34,6 +35,7 @@ def show_path(path):
 class Studio(tk.Tk):
     def __init__(self, paths=(), *, tool=None):
         super().__init__()
+        self.lang=Language()
         self.title("Pivoki Studio")
         self.geometry("980x680")
         self.minsize(680,500)
@@ -52,11 +54,15 @@ class Studio(tk.Tk):
         head.pack(fill="x")
         tk.Label(head,text="Pivoki",font=("TkDefaultFont",22,"bold"),bg="#1e3026",fg="#f2f5ef").pack(side="left")
         tk.Label(head,text="Studio",font=("TkDefaultFont",16),bg="#1e3026",fg="#d7ed99",padx=10).pack(side="left")
+        languages=ttk.Combobox(head,state="readonly",values=("Türkçe","English","Français"),width=9)
+        languages.current(("tr","en","fr").index(self.lang.code))
+        languages.pack(side="right")
+        languages.bind("<<ComboboxSelected>>",lambda _:self.switch_language(("tr","en","fr")[languages.current()]))
         self.tabs=ttk.Notebook(self)
         self.tabs.pack(fill="both",expand=True,padx=8,pady=8)
         editor=ttk.Frame(self.tabs,padding=12)
         self.tabs.add(editor,text="Düzenleyici")
-        self.rules_view=RulePanel(self.tabs)
+        self.rules_view=RulePanel(self.tabs,self.lang)
         self.tabs.add(self.rules_view,text="Klasör kuralları")
         self.tabs.bind("<<NotebookTabChanged>>",self.tab_changed)
         top=ttk.Frame(editor)
@@ -82,9 +88,10 @@ class Studio(tk.Tk):
             initial_op = PDF[1]
         self.op=tk.StringVar(value=initial_op)
         ttk.Label(control,text="İşlem",style="Title.TLabel").pack(anchor="w")
-        self.chooser=ttk.Combobox(control,textvariable=self.op,state="readonly",width=27,values=PHOTO+PDF+VIDEO+QR+UDF)
+        self.actions=PHOTO+PDF+VIDEO+QR+UDF
+        self.chooser=ttk.Combobox(control,state="readonly",width=27,values=[self.lang(a) for a in self.actions])
         self.chooser.pack(fill="x",pady=(3,10))
-        self.chooser.bind("<<ComboboxSelected>>",lambda _:self.settings())
+        self.chooser.bind("<<ComboboxSelected>>",self.choose_operation)
         self.options=ttk.Frame(control)
         self.options.pack(fill="both",expand=True)
         self.canvas=tk.Canvas(body,bg="#e9eee5",highlightthickness=1,highlightbackground="#a8b7a9",
@@ -109,7 +116,29 @@ class Studio(tk.Tk):
         self.settings()
         if tool=="rules":
             self.tabs.select(self.rules_view)
+        self.switch_language(self.lang.code,save=False)
         self.after(1500,self.service_rules)
+
+    def choose_operation(self,_event):
+        self.op.set(self.actions[self.chooser.current()])
+        self.settings()
+
+    def switch_language(self,code,save=True):
+        self.lang.code=code
+        if save:
+            self.lang.preference.parent.mkdir(parents=True,exist_ok=True)
+            self.lang.preference.write_text(code)
+        self.lang.widgets(self)
+        self.tabs.tab(0,text=self.lang("Düzenleyici"))
+        self.tabs.tab(1,text=self.lang("Klasör kuralları"))
+        self.chooser.configure(values=[self.lang(a) for a in self.actions])
+        self.chooser.current(self.actions.index(self.op.get()))
+        for key,label in (("root","İzlenen klasör"),("state","Durum"),("message","Son işlem")):
+            self.rules_view.table.heading(key,text=self.lang(label))
+        self.update_source()
+        self.status.set(self.lang(self.status.get()))
+        self.rules_view.refresh()
+        self.render_canvas()
 
     def close(self):
         if self.busy:
@@ -129,7 +158,7 @@ class Studio(tk.Tk):
             self.rules_view.refresh()
 
     def update_source(self):
-        self.source.set(", ".join(p.name for p in self.paths[:2])+(f" +{len(self.paths)-2}" if len(self.paths)>2 else "") if self.paths else "Dosya seçilmedi")
+        self.source.set(", ".join(p.name for p in self.paths[:2])+(f" +{len(self.paths)-2}" if len(self.paths)>2 else "") if self.paths else self.lang("Dosya seçilmedi"))
 
     def choose(self):
         if self.busy:
@@ -230,7 +259,9 @@ class Studio(tk.Tk):
                 self.field("angle","Maske açısı (derece)","0")
         if op in (QR[1],QR[2]):
             self.save_btn.configure(text="QR oku")
-        self.status.set("Hazır")
+        self.status.set(self.lang("Hazır"))
+        self.lang.widgets(self)
+        self.chooser.current(self.actions.index(self.op.get()))
         self.schedule_preview()
 
     def save_profile(self):
@@ -243,7 +274,7 @@ class Studio(tk.Tk):
             os.replace(f.name,self.profile)
             self.status.set("Filigran profili kaydedildi.")
         except Exception as exc:
-            self.status.set(str(exc))
+            self.status.set(self.lang(str(exc)))
 
     def values(self):
         return {key:get() for key,get in self.fields.items()}
@@ -294,7 +325,7 @@ class Studio(tk.Tk):
                 self.closed_shape=self.closed_shape and len(set(self.points))>=3
             self.preview()
         except Exception as exc:
-            self.status.set(str(exc))
+            self.status.set(self.lang(str(exc)))
 
     def close_polygon(self):
         if len(set(self.points))>=3:
@@ -308,7 +339,7 @@ class Studio(tk.Tk):
         if self.busy:
             return
         self.busy=True
-        self.status.set("İşleniyor…")
+        self.status.set(self.lang("İşleniyor…"))
         self.save_btn.state(["disabled"])
         self.preview_btn.state(["disabled"])
         self.chooser.state(["disabled"])
@@ -326,7 +357,7 @@ class Studio(tk.Tk):
             except Exception as exc:
                 self.picture=None
                 self.render_canvas()
-                self.status.set(str(exc))
+                self.status.set(self.lang(str(exc)))
         self.after(20,poll)
 
     def request(self):
@@ -339,7 +370,7 @@ class Studio(tk.Tk):
         try:
             req=self.request()
         except ValueError as exc:
-            self.status.set(str(exc))
+            self.status.set(self.lang(str(exc)))
             return
         op,v,paths,points,closed=req
         if op in (QR[1],QR[2]):
@@ -405,7 +436,7 @@ class Studio(tk.Tk):
         self.canvas.delete("all")
         w,h=self.canvas.winfo_width(),self.canvas.winfo_height()
         if not getattr(self,"picture",None):
-            self.canvas.create_text(w/2,h/2,text="Önizleme",fill="#516755",font=("TkDefaultFont",16))
+            self.canvas.create_text(w/2,h/2,text=self.lang("Önizleme"),fill="#516755",font=("TkDefaultFont",16))
             return
         pic=ImageOps.contain(self.picture,(max(1,w-16),max(1,h-16)),Image.Resampling.LANCZOS)
         self.tkpic=ImageTk.PhotoImage(pic)
@@ -482,8 +513,8 @@ class Studio(tk.Tk):
                 if signed:
                     if op not in PDF[:2]:
                         raise ValueError("Önce imzasız çalışma kopyası oluşturun veya özgünleri ZIP yapın.")
-                    signed_ok=messagebox.askyesno("İmzasız çalışma kopyası",
-                        "İmza ve etkileşimli form alanları çalışma kopyasından kaldırılacak. Devam edilsin mi?",parent=self)
+                    signed_ok=messagebox.askyesno(self.lang("İmzasız çalışma kopyası"),
+                        self.lang("İmza ve etkileşimli form alanları çalışma kopyasından kaldırılacak. Devam edilsin mi?"),parent=self)
                     if not signed_ok:
                         return
             if op==PDF[3]:
@@ -557,17 +588,17 @@ class Studio(tk.Tk):
                 return target
             self.work(export,self.success)
         except Exception as exc:
-            self.status.set(str(exc))
+            self.status.set(self.lang(str(exc)))
 
     def success(self,target):
         from pivoki_engine.service import record_export
         saved = sorted(target.glob("*.svg")) if target.is_dir() else [target]
         try:
             record_export(self.op.get(), saved)
-            self.status.set(f"Kaydedildi · {target}")
+            self.status.set(f"{self.lang('Kaydedildi')} · {target}")
         except Exception as exc:
             self.status.set(f"Kaydedildi · {target} · Geçmişe yazılamadı: {exc}")
-        if messagebox.askyesno("Çıktı hazır",f"{target}\n\nKlasörde gösterilsin mi?",parent=self):
+        if messagebox.askyesno(self.lang("Çıktı hazır"),f"{target}\n\n{self.lang('Klasörde gösterilsin mi?')}",parent=self):
             show_path(target if target.is_dir() else target.parent)
 
     def read_codes(self,op):
@@ -577,15 +608,15 @@ class Studio(tk.Tk):
                 self.status.set("Seçili görüntüde QR kodu bulunamadı.")
                 return
             dlg=tk.Toplevel(self)
-            dlg.title("Okunan QR kodları")
+            dlg.title(self.lang("Okunan QR kodları"))
             for value in dict.fromkeys(values):
                 ttk.Label(dlg,text=value,wraplength=420,padding=8).pack(anchor="w")
                 def copy(v=value):
                     self.clipboard_clear()
                     self.clipboard_append(v)
-                ttk.Button(dlg,text="Kopyala",command=copy).pack(anchor="w")
+                ttk.Button(dlg,text=self.lang("Kopyala"),command=copy).pack(anchor="w")
                 if value.lower().startswith(("https://","http://")):
-                    ttk.Button(dlg,text="Bağlantıyı aç",command=lambda v=value:webbrowser.open(v)).pack(anchor="w")
+                    ttk.Button(dlg,text=self.lang("Bağlantıyı aç"),command=lambda v=value:webbrowser.open(v)).pack(anchor="w")
             self.status.set(f"{len(values)} QR kodu okundu.")
         if op==QR[1]:
             self.work(lambda:qr.read(images.source_image(self.paths[0])),display)

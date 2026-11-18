@@ -4,8 +4,9 @@ from . import rules
 
 
 class RulePanel(ttk.Frame):
-    def __init__(self, parent):
+    def __init__(self, parent, lang):
         super().__init__(parent, padding=14)
+        self.lang=lang
         self.columnconfigure(1, weight=1)
         self.rowconfigure(0, weight=1)
         self.table = ttk.Treeview(self, columns=("root","state","message"),show="headings",height=5)
@@ -52,7 +53,7 @@ class RulePanel(ttk.Frame):
         selected=self.table.selection()
         self.table.delete(*self.table.get_children())
         for row in rules.definitions():
-            self.table.insert("","end",iid=row["id"],values=(row["root"],"Etkin" if row["enabled"] else "Duraklatıldı",row["message"]))
+            self.table.insert("","end",iid=row["id"],values=(row["root"],self.lang("Etkin" if row["enabled"] else "Duraklatıldı"),row["message"]))
         if selected and self.table.exists(selected[0]):
             self.table.selection_set(selected)
 
@@ -79,7 +80,7 @@ class RulePanel(ttk.Frame):
                 total=sum(r["status"]=="planned" for r in result["rows"])
             details=f"{len(files)} dosya · örnek planda {total} çıktı\n{root}\n→ {out}\nPaket: {pkg['name']} · r{pkg['revision']}"
             details += "\nMevcut dosyalar da işlenecek." if self.existing.get() else "\nYalnızca yeni veya değişen dosyalar işlenecek."
-            if messagebox.askyesno("Kuralı etkinleştir?",details,parent=self):
+            if messagebox.askyesno(self.lang("Kuralı etkinleştir?"),details,parent=self):
                 rules.enable(root,out,self.extensions.get(),pkg["packageId"],pkg["revision"],self.policy.get(),self.existing.get())
                 self.feedback.set("Kural etkin. Pivoki açıkken klasör izlenir.")
                 self.refresh()
