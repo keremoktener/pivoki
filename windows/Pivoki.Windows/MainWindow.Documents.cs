@@ -18,6 +18,7 @@ public sealed partial class MainWindow
         }
         var removeAll=selected.Length>1;Dictionary<string,string>? changes=null;
         if(selected.Length==1){var values=await metadataService.ReadAsync(selected[0]);var editor=new MetadataEditor(this,values);if(editor.ShowDialog()!=true)return;removeAll=editor.RemoveAll;changes=removeAll?null:editor.Updates;}
+        if(!await CanExportPdfAsync(selected))return;
         await RunAsync((destination,p,t)=>metadataService.WriteAsync(selected,destination,removeAll,changes,progress:p,token:t),"Metadata");
     }
     internal static string ToolSymbol(string id)=>id switch{"compress"=>"↘","removeMetadata"=>"◇","editImage"=>"☷","annotateImage"=>"✎","frameImage"=>"▣","cropImage" or "cropVideo"=>"⌗","trimAudio" or "trimVideo"=>"✂","muteVideo"=>"♫","normalizeAudio"=>"≋","audioChannels"=>"⇆","audioToVideo"=>"▷","createCollage"=>"▦","redactImage" or "redactVideo" or "redactAudio"=>"▨","readQRCode"=>"▧","mergePDF"=>"▣","splitPDF" or "splitVideo"=>"◫","organizePDF"=>"▤","extractArchive"=>"↗","createPDF"=>"▱","joinVideos"=>"⇥","videoSnapshots"=>"▣","changeVideoSpeed"=>"◴",_=>"↗"};
@@ -32,16 +33,20 @@ public sealed partial class MainWindow
         if(choice.Id=="convert")
         {
             var editor=new ToolEditor(this,"convert","Convert",selected[0],inputs:selected,outputFormats:FeatureCatalog.Formats(selected));editor.ConfigureProfiles(preferences,requestedFormat);if(editor.ShowDialog()!=true)return;
+            if(!await CanExportPdfAsync(selected,editor.DocumentOptions.Password,extract:true))return;
             await RunAsync((destination,p,t)=>new DocumentConversion(officeRuntime,tools).ConvertAsync(selected,editor.Format,destination,editor.DocumentOptions,p,t),"Convert to "+editor.Format.ToUpperInvariant());return;
         }
         if(choice.Id=="organizePDF")
         {
+            if(!await CanExportPdfAsync(selected))return;
             var organizer=await PdfOrganizer.CreateAsync(this,selected[0]);if(organizer.ShowDialog()!=true)return;
             // Read the organizer's WPF state on the UI thread; the export runs on a worker thread.
             var pages=organizer.Pages;var rotations=organizer.Rotations;var pageRotations=organizer.PageRotations;var uniformWidth=organizer.UniformWidth;
             await RunAsync((destination,p,t)=>Task.Run(()=>DocumentEngine.Pdf("organizePDF",selected,destination,pages,t,rotations,pageRotations:pageRotations,uniformWidth:uniformWidth),t),"Organize PDF");return;
         }
-        var dialog=new ToolEditor(this,choice.Id,choice.Title,selected[0],inputs:selected);if(dialog.ShowDialog()!=true)return;if(choice.Id=="compress"){await RunAsync((destination,p,t)=>PdfCompression.RunAsync(selected,destination,dialog.ImageOptions,dialog.DocumentOptions.Password,p,t),"Compress PDF");return;}
+        var dialog=new ToolEditor(this,choice.Id,choice.Title,selected[0],inputs:selected);if(dialog.ShowDialog()!=true)return;
+        if(!await CanExportPdfAsync(selected,dialog.DocumentOptions.Password))return;
+        if(choice.Id=="compress"){await RunAsync((destination,p,t)=>PdfCompression.RunAsync(selected,destination,dialog.ImageOptions,dialog.DocumentOptions.Password,p,t),"Compress PDF");return;}
         // PagesPerFile and PageRanges read editor text boxes, so capture them before leaving the UI thread.
         var inputs=dialog.OrderedInputs;var pagesPerFile=dialog.PagesPerFile;var password=dialog.DocumentOptions.Password;var pageRanges=dialog.PageRanges;
         await RunAsync((destination,p,t)=>Task.Run(()=>DocumentEngine.Pdf(choice.Id,inputs,destination,null,t,pagesPerFile:pagesPerFile,password:password,pageRanges:pageRanges),t),choice.Title);

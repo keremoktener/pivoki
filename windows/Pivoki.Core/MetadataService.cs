@@ -51,6 +51,7 @@ public sealed class MetadataService(string root,string? perlSearchPath=null)
         using var tx=new ExportTransaction(destination);var outputs=new List<string>();
         foreach(var input in inputs)
         {
+            if(FeatureCatalog.Extension(input)=="pdf")DocumentEngine.RequirePdfExport(input,"",extract:false);
             token.ThrowIfCancellationRequested();var output=SafePaths.Unique(tx.StagingDirectory,Path.GetFileNameWithoutExtension(input)+" Metadata"+Path.GetExtension(input));
             if(FeatureCatalog.Extension(input)=="pdf"&&removeAll){var fresh=DocumentEngine.Pdf("removeMetadata",[input],tx.StagingDirectory,token:token)[0];File.Move(fresh,output);}else File.Copy(input,output);
             var args=new List<string>{"-overwrite_original","-P","-charset","filename=UTF8"};if(removeAll){args.Add("-all=");if(FeatureCatalog.IsImage(input)||FeatureCatalog.Extension(input)=="gif")args.AddRange(["-tagsfromfile","@","-Orientation","-ICC_Profile"]);}if(removals is not null)args.AddRange(removals.Select(k=>"-"+k+"="));

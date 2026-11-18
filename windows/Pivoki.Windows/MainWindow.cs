@@ -62,6 +62,11 @@ public sealed partial class MainWindow:Window
         var dropStack=new StackPanel();dropStack.Children.Add(drop);list.ItemsSource=files;list.SelectionMode=SelectionMode.Extended;
         BuildFileChips();var clear=Button("Clear",()=>{files.Clear();Refresh();});DockPanel.SetDock(clear,Dock.Right);manage.Children.Add(clear);manage.Children.Add(list);dropStack.Children.Add(manage);
         shortcutHints.Orientation=Orientation.Horizontal;shortcutHints.Margin=new(0,12,0,0);dropStack.Children.Add(shortcutHints);workArea.Children.Add(Card(dropStack));
+        var studioTools=new WrapPanel{Margin=new(0,2,0,8)};
+        studioTools.Children.Add(Button("Create QR code",()=>ShowStudioTool("qr")));
+        studioTools.Children.Add(Button("Read QR from screen",()=>ShowStudioTool("scan")));
+        studioTools.Children.Add(Button("Folder rules",()=>ShowStudioTool("rules")));
+        workArea.Children.Add(studioTools);
         actions.Margin=new(0,10,0,0);
         var web=new StackPanel();web.Children.Add(Text("Download a link",17));web.Children.Add(Text("Video, audio, or an image. Straight into your tools.",12,"Muted"));
         var download=new DockPanel{Margin=new(0,12,0,0)};var save=Primary("Download ↗",async()=>await DownloadAsync());DockPanel.SetDock(save,Dock.Right);download.Children.Add(save);DockPanel.SetDock(downloadKind,Dock.Right);download.Children.Add(downloadKind);download.Children.Add(link);web.Children.Add(download);

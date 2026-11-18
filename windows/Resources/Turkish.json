@@ -1533,5 +1533,15 @@
   "Symbolic link": "Sembolik bağlantı",
   "Document bundle": "Belge paketi",
   "Cannot read this item": "Öğe okunamıyor",
-  "Invalid image": "Geçersiz görsel"
+  "Invalid image": "Geçersiz görsel",
+  "Create QR code": "QR kodu oluştur",
+  "Read QR from screen": "Ekrandan QR oku",
+  "Folder rules": "Klasör kuralları",
+  "Changed": "Değişti",
+  "Targets changed. Review and approve the new plan.": "Hedefler değişti. Yeni planı inceleyip onayla.",
+  "PDF export options": "PDF dışa aktarma seçenekleri",
+  "Changing these pages would invalidate the digital signature. Keep the original PDF or create an unsigned working copy in Studio.": "Bu sayfaları değiştirmek dijital imzayı geçersiz kılar. Özgün PDF’yi saklayın veya Stüdyo’da imzasız çalışma kopyası oluşturun.",
+  "The PDF permissions do not allow this export.": "PDF izinleri bu dışa aktarma işlemine izin vermiyor.",
+  "ZIP original files": "Özgünleri ZIP olarak paylaş",
+  "Create unsigned working copy…": "İmzasız çalışma kopyası oluştur…"
 }

@@ -75,12 +75,8 @@ public static partial class DocumentEngine
     // unusable for them. Their tags and layer settings are dropped, as they were before.
     private static void RequireRebuildable(PdfDocument source,string tool)
     {
+        EnsureUnsigned(source);
         if(tool=="compress")return;var catalog=source.Internals.Catalog.Elements;
-        // A signature covers the original bytes, so no page copy can keep it valid. Name it, with
-        // macOS's wording (PDFInterop.js), instead of the generic form message below. Signature
-        // dictionaries may sit outside the form registry (a /Perms /DocMDP certification), so the whole
-        // document is searched.
-        if(tool!="removeMetadata"&&Signed(source))throw new InvalidDataException("This PDF contains digital signatures. This page operation cannot safely preserve that feature. No copy was exported.");
         var widgets=source.Pages.Cast<PdfPage>().Any(p=>p.Elements.GetArray("/Annots") is {} annotations&&annotations.Elements.Any(e=>(e is PdfSharp.Pdf.Advanced.PdfReference reference?reference.Value:e) is PdfDictionary annotation&&annotation.Elements.GetName("/Subtype")=="/Widget"));
         var attachments=catalog.GetDictionary("/Names")?.Elements.ContainsKey("/EmbeddedFiles")==true||catalog.ContainsKey("/AF")||catalog.ContainsKey("/Collection");
         // Some generators write an empty /AcroForm; only fields (or an XFA form) are lost.
@@ -88,6 +84,35 @@ public static partial class DocumentEngine
         if(!fields&&!widgets&&!attachments)return;
         throw new InvalidDataException(tool=="removeMetadata"?"This PDF has form fields or attachments that metadata cleanup cannot keep. No copy was exported.":"This PDF has form fields or attachments that merging, splitting or reordering pages cannot keep. No copy was exported.");
     }
+    public sealed record PdfExportCheck(bool Signed, bool Encrypted, bool Permitted);
+
+    public static PdfExportCheck InspectPdfExport(string path,string password,bool extract)
+    {
+        using var source=PdfReader.Open(path,password,PdfDocumentOpenMode.Import);
+        var encrypted=Protected(source);
+        var permissions=source.SecuritySettings;
+        var permitted=!encrypted || (extract?permissions.PermitExtractContent:permissions.PermitModifyDocument);
+        if(!permitted)
+        {
+            // PDFsharp's Modify mode verifies the owner password. Opening never saves to disk.
+            try{using var owner=PdfReader.Open(path,password,PdfDocumentOpenMode.Modify);permitted=true;}
+            catch(PdfReaderException){permitted=false;}
+        }
+        return new(Signed(source),encrypted,permitted);
+    }
+
+    internal const string SignedExportMessage="This PDF contains digital signatures. This page operation cannot safely preserve that feature. No copy was exported.";
+    public static void EnsureUnsigned(PdfDocument source)
+    {
+        if(Signed(source))throw new InvalidDataException(SignedExportMessage);
+    }
+    public static void RequirePdfExport(string path,string password,bool extract)
+    {
+        var check=InspectPdfExport(path,password,extract);
+        if(check.Signed)throw new InvalidDataException(SignedExportMessage);
+        if(!check.Permitted)throw new UnauthorizedAccessException("The PDF permissions do not allow this export.");
+    }
+
     // Walks what the catalog reaches, following references and the dictionaries and arrays written in
     // place: a signature that an incremental update removed can stay in the file, unreachable, and
     // must not count. A signature dictionary has /ByteRange (and usually /Type /Sig). An empty
@@ -99,7 +124,7 @@ public static partial class DocumentEngine
         {
             if(item is PdfSharp.Pdf.Advanced.PdfReference reference){if(reference.Value is {} target)pending.Push(target);continue;}
             if(item is not (PdfDictionary or PdfArray)||!seen.Add(item))continue;
-            if(item is PdfDictionary d){if(d.Elements.ContainsKey("/ByteRange")||d.Elements.GetName("/Type")=="/Sig")return true;foreach(var value in d.Elements.Values)if(value is not null)pending.Push(value);}
+            if(item is PdfDictionary d){if(d.Elements.ContainsKey("/ByteRange")||d.Elements.GetName("/Type") is "/Sig" or "/DocTimeStamp" || (d.Elements.GetName("/FT")=="/Sig" && d.Elements["/V"] is not (null or PdfNull)))return true;foreach(var value in d.Elements.Values)if(value is not null)pending.Push(value);}
             else foreach(var value in ((PdfArray)item).Elements)pending.Push(value);
         }
         return false;

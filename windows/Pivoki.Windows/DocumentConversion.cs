@@ -15,6 +15,7 @@ public sealed class DocumentConversion(OfficeRuntime runtime,Toolchain tools)
         for(var i=0;i<inputs.Count;i++)
         {
             token.ThrowIfCancellationRequested();var input=inputs[i];var ext=FeatureCatalog.Extension(input);var work=Path.Combine(tx.StagingDirectory,"work-"+i);Directory.CreateDirectory(work);string source=input;
+            if(ext=="pdf")DocumentEngine.RequirePdfExport(source,options.Password,extract:true);
             if(!FeatureCatalog.Formats([input]).Contains(format))throw new ArgumentException("This conversion is not available for "+Path.GetFileName(input)+".");
             progress?.Report(new(null,"Preparing "+Path.GetFileName(input)+"…"));
             if(FeatureCatalog.IsArchive(input)){outputs.AddRange(ArchiveEngine.Convert(input,format,tx.StagingDirectory,options.Password,progress,token));continue;}

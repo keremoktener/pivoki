@@ -60,9 +60,14 @@ public static class PackageEngine
         return Process.Start(start);
     }
 
-    public static void OpenStudio(IEnumerable<string> inputs)
+    public static void OpenStudio(IEnumerable<string> inputs,string? tool=null)
     {
         var start = StartInfo("studio");
+        if(tool is not null)
+        {
+            start.ArgumentList.Add("--tool");
+            start.ArgumentList.Add(tool);
+        }
         start.ArgumentList.Add("--");
         foreach(var input in inputs)start.ArgumentList.Add(input);
         Process.Start(start)?.Dispose();

@@ -147,6 +147,30 @@ internal static class ParityChecks
             update+=$"xref\n{size} 1\n{(objectAt+1).ToString("D10")} 00000 n \ntrailer\n<< /Size {size+1} /Root {root0} R /Prev {previous} >>\nstartxref\n{xrefAt}\n%%EOF\n";
             File.WriteAllBytes(unsignedLaterPdf,[..original,..Encoding.Latin1.GetBytes(update)]);
         }
+        var restricted=Pdf("Restricted export.pdf","BT /F1 24 Tf 72 700 Td (Restricted) Tj ET",pdf=>{
+            pdf.SecuritySettings.UserPassword="reader";pdf.SecuritySettings.OwnerPassword="author";
+            pdf.SecuritySettings.PermitModifyDocument=false;pdf.SecuritySettings.PermitExtractContent=false;
+        });
+        check(!DocumentEngine.InspectPdfExport(restricted,"reader",extract:true).Permitted &&
+              !DocumentEngine.InspectPdfExport(restricted,"reader",extract:false).Permitted &&
+              DocumentEngine.InspectPdfExport(restricted,"author",extract:false).Permitted,
+              "Export permission must distinguish the restricted reader and owner");
+        check(new[]{signedPdf,certifiedPdf,directCertifiedPdf,untypedCertifiedPdf}.All(file=>
+            DocumentEngine.InspectPdfExport(file,"",extract:true).Signed),"Native export preflight missed an active PDF signature");
+        check(!DocumentEngine.InspectPdfExport(unsignedFieldPdf,"",extract:true).Signed &&
+            !DocumentEngine.InspectPdfExport(unsignedLaterPdf,"",extract:false).Signed,"An empty or obsolete signature was reported as active");
+        foreach(var file in new[]{certifiedPdf,signedPdf})
+        {
+            var original=File.ReadAllBytes(file);
+            bool Blocked(Action action){try{action();return false;}catch(InvalidDataException){return true;}}
+            check(Blocked(()=>DocumentEngine.RequirePdfExport(file,"",extract:true)) &&
+                Blocked(()=>DocumentEngine.Pdf("compress",[file],root)) &&
+                Blocked(()=>DocumentEngine.Pdf("removeMetadata",[file],root)) &&
+                File.ReadAllBytes(file).SequenceEqual(original),"An export path accepted a signed PDF or modified its original");
+            using var signedArchive=System.IO.Compression.ZipFile.OpenRead(DocumentEngine.Zip([file],root));
+            using var entry=signedArchive.Entries.Single().Open();using var copy=new MemoryStream();entry.CopyTo(copy);
+            check(copy.ToArray().SequenceEqual(original),"ZIP of signed PDF did not preserve exact bytes");
+        }
         const string signedMessage="This PDF contains digital signatures. This page operation cannot safely preserve that feature. No copy was exported.";
         bool RefusedSigned(Func<IReadOnlyList<string>> run){try{run();return false;}catch(InvalidDataException error){return error.Message==signedMessage;}}
         check(Refused(()=>DocumentEngine.Pdf("mergePDFs",[textPdf,unsignedFieldPdf],root))&&!RefusedSigned(()=>DocumentEngine.Pdf("mergePDFs",[textPdf,unsignedFieldPdf],root)),"An unsigned signature field was not refused as a form field");

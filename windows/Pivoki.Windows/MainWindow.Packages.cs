@@ -32,9 +32,11 @@ public sealed partial class MainWindow
         catch(Exception){cachedPackages=[];}
     }
 
-    private void ShowStudio()
+    private void ShowStudio()=>ShowStudioTool(null);
+
+    private void ShowStudioTool(string? tool)
     {
-        try{PackageEngine.OpenStudio(files);}
+        try{PackageEngine.OpenStudio(tool is null?files:Array.Empty<string>(),tool);}
         catch(Exception error){MessageBox.Show(this,error.Message,"Pivoki Studio");}
     }
 

@@ -24,5 +24,15 @@
     "url": "https://api.nuget.org/v3-flatcontainer/bouncycastle.cryptography/2.7.0/bouncycastle.cryptography.2.7.0.nupkg",
     "member": "LICENSE.md",
     "sha256": "be0592a6c76f398356fbf252a4fb43476fb3ca3c45331428c2f4f22c499e8311"
+  },
+  {
+    "file": "ResvgSharp-MIT.txt",
+    "url": "https://raw.githubusercontent.com/Ivy-Interactive/ResvgSharp/f09dc74ea7b22a535d63d715f20b67cbdb61cc22/LICENSE",
+    "sha256": "209146c6b5636d981bc26390a08fd41374816c947379475ec618bb0561573a29"
+  },
+  {
+    "file": "Resvg-THIRD-PARTY-NOTICES.txt",
+    "url": "https://github.com/linebender/resvg/tree/v0.43.0",
+    "sha256": "53ad07e2fe6fc30f7c01bf3228bc9821fbab5e95a27b672d4dd590ba36aacfbd"
   }
 ]

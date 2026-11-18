@@ -31,6 +31,12 @@ if ($check.ExitCode -ne 0) { throw "WPF package check failed ($($check.ExitCode)
 
 This check pins a package, previews two paths, introduces a competing file, reapproves the changed plan and checks the saved files and Library. For physical gesture acceptance, test an Explorer drag and modifier switch, a gesture inside an excluded application, and a full-screen application on an interactive Windows machine. Record OS build, display scale and focus behavior.
 
+## Signed PDF inputs
+
+Native PDF conversions, page edits, compression and metadata writes inspect the active PDF object graph. When a digital signature is present, the export dialog offers a byte-preserving archive of the original files. A single signed, unencrypted PDF can also open Studio's explicit unsigned-copy workflow. Permissions can restrict export. Viewing the document, reading a QR code, copying, and sharing original files remain available.
+
+Detection covers reachable signature dictionaries, byte ranges, timestamp dictionaries and populated signature fields. Empty signature fields and discarded earlier revisions are distinguished. This check does not establish certificate trust, revocation status or cryptographic validity.
+
 ## Publisher-signed distribution
 
 Run from a Windows release machine with SignTool, a trusted code-signing identity in the current user's Personal certificate store, and the complete packaged Windows engine. The publisher argument is the exact X.500 subject displayed by the signing certificate. Use a new output directory for every build.
