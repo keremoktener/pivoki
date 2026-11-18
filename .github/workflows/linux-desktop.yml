@@ -18,7 +18,7 @@ jobs:
           sudo apt-get install -y python3-venv python3-tk xvfb xauth xdotool weston xwayland desktop-file-utils ffmpeg
       - name: Install the user desktop entry and run the native workflow
         run: |
-          linux/install.sh --prefix "$RUNNER_TEMP/pivoki user"
+          PYTHON=/usr/bin/python3 linux/install.sh --prefix "$RUNNER_TEMP/pivoki user"
           desktop-file-validate "$RUNNER_TEMP/pivoki user/share/applications/org.pivoki.Desktop.desktop"
           py="$RUNNER_TEMP/pivoki user/share/pivoki/desktop-venv/bin/python"
           "$py" -m pip install pytest

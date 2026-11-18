@@ -60,11 +60,18 @@ def drop_files(root, payload):
     ):
         return [payload]
     accepted = []
-    for token in root.tk.splitlist(payload):
+    try:
+        tokens = root.tk.splitlist(payload)
+    except tk.TclError:
+        return []
+    for token in tokens:
         if token.startswith("/"):
             accepted.append(token)
             continue
-        parsed = urlsplit(token)
+        try:
+            parsed = urlsplit(token)
+        except ValueError:
+            continue
         if (
             parsed.scheme == "file"
             and parsed.netloc in ("", "localhost")
