@@ -52,6 +52,7 @@ def arguments():
         add_run_args(convert)
     studio = subs.add_parser("studio", help="Open the desktop file tools")
     studio.add_argument("paths", nargs="*")
+    studio.add_argument("--tool", choices=["qr", "scan", "rules", "pdf-zip", "pdf-copy"])
     watch = subs.add_parser("watch", help="Process enabled folder rules until the host exits")
     watch.add_argument("--parent-pid", type=int, required=True)
     subs.add_parser("rpc", help="Read one JSON request on stdin and emit one JSON response")
@@ -99,7 +100,7 @@ def main(argv=None):
             try:
                 if args.command == "studio":
                     from pivoki_studio import launch
-                    return launch(args.paths) or 0
+                    return launch(args.paths, tool=args.tool) or 0
                 from pivoki_studio.rules import serve
                 return serve(args.parent_pid) or 0
             except ImportError as exc:

@@ -20,6 +20,7 @@ from .rules_panel import RulePanel
 PHOTO = ("Açıklama şeridi","Filigran","Fonu kaldır","Çokgen","ICO","EXIF zamanı","Kamera RAW")
 PDF = ("PDF filigranı","İmzasız çalışma kopyası","Özgünleri ZIP yap","PDF sayfalarını SVG yap","PDF/A-2b")
 VIDEO = ("Mac ile uyumlu MP4","Hedef boyut","Video maskesi")
+UDF = ("UYAP belgesini PDF yap","UYAP belgesini DOCX yap")
 QR = ("QR oluştur","Dosyadan QR oku","Ekrandan QR oku")
 
 
@@ -31,7 +32,7 @@ def show_path(path):
 
 
 class Studio(tk.Tk):
-    def __init__(self, paths=()):
+    def __init__(self, paths=(), *, tool=None):
         super().__init__()
         self.title("Pivoki Studio")
         self.geometry("980x680")
@@ -68,9 +69,20 @@ class Studio(tk.Tk):
         body.pack(fill="both",expand=True)
         control=ttk.Frame(body,padding=(0,0,8,0))
         body.add(control,weight=1)
-        self.op=tk.StringVar(value=PHOTO[0] if paths else QR[0])
+        initial_op = PHOTO[0] if paths else QR[0]
+        if paths and Path(paths[0]).suffix.lower()==".udf":
+            initial_op=UDF[0]
+        if tool=="qr":
+            initial_op=QR[0]
+        elif tool=="scan":
+            initial_op=QR[2]
+        elif tool == "pdf-zip":
+            initial_op = PDF[2]
+        elif tool == "pdf-copy":
+            initial_op = PDF[1]
+        self.op=tk.StringVar(value=initial_op)
         ttk.Label(control,text="İşlem",style="Title.TLabel").pack(anchor="w")
-        self.chooser=ttk.Combobox(control,textvariable=self.op,state="readonly",width=27,values=PHOTO+PDF+VIDEO+QR)
+        self.chooser=ttk.Combobox(control,textvariable=self.op,state="readonly",width=27,values=PHOTO+PDF+VIDEO+QR+UDF)
         self.chooser.pack(fill="x",pady=(3,10))
         self.chooser.bind("<<ComboboxSelected>>",lambda _:self.settings())
         self.options=ttk.Frame(control)
@@ -95,6 +107,8 @@ class Studio(tk.Tk):
         self.fields={}
         self.last_dir=None
         self.settings()
+        if tool=="rules":
+            self.tabs.select(self.rules_view)
         self.after(1500,self.service_rules)
 
     def close(self):
@@ -126,7 +140,9 @@ class Studio(tk.Tk):
             self.update_source()
             self.reset_points()
             ext=self.paths[0].suffix.lower()
-            if ext==".pdf":
+            if ext==".udf":
+                self.op.set(UDF[0])
+            elif ext==".pdf":
                 self.op.set(PDF[0])
             elif ext in {".mov",".mp4",".mkv",".webm",".avi"}:
                 self.op.set(VIDEO[0])
@@ -329,6 +345,9 @@ class Studio(tk.Tk):
             if op==PHOTO[5]:
                 filesystem=datetime.fromtimestamp(paths[0].stat().st_mtime).astimezone().isoformat()
                 return f"Dosya: {filesystem}  ·  EXIF: {images.exif_time(paths[0],v['offset']).isoformat()}"
+            if op in UDF:
+                from .udf import inspect_udf
+                return inspect_udf(paths[0])
             if op in PDF:
                 if op==PDF[2]:
                     return "\n".join(p.name for p in paths)
@@ -350,12 +369,27 @@ class Studio(tk.Tk):
                 self.picture=result
                 self.render_canvas()
                 self.status.set(f"{result.width} × {result.height} px")
+            elif isinstance(result,dict):
+                self.udf_preview(result)
             elif isinstance(result,Path):
                 show_path(result)
                 self.status.set("Solda özgün sahne, sağda hedef boyutun kodlama örneği.")
             else:
                 self.status.set(result)
         self.work(prepare,ready)
+
+    def udf_preview(self,result):
+        dlg=tk.Toplevel(self)
+        dlg.title("UYAP · Salt okunur önizleme")
+        summary=f"{result['paragraphs']} paragraf · {result['tables']} tablo"
+        self.status.set(summary)
+        ttk.Label(dlg,text=summary,padding=8).pack(anchor="w")
+        area=tk.Text(dlg,width=70,height=22,wrap="word")
+        area.pack(fill="both",expand=True)
+        if result["warnings"]:
+            area.insert("end","\n".join(result["warnings"])+"\n\n")
+        area.insert("end",result["text"])
+        area.configure(state="disabled")
 
     def render_canvas(self):
         self.canvas.delete("all")
@@ -414,6 +448,14 @@ class Studio(tk.Tk):
             op,v,paths,points,closed=req
             if op in (QR[1],QR[2]):
                 return self.read_codes(op)
+            if op in UDF:
+                from .udf import inspect_udf
+                info=inspect_udf(paths[0])
+                notes=list(info["warnings"])
+                if info["signatureParts"]:
+                    notes.append("Çıktı bir çalışma kopyasıdır. İmza özgün UDF içinde kalır.")
+                if notes and not messagebox.askokcancel("Dışa aktarma", "\n".join(notes),parent=self):
+                    return
             signed_ok=False
             if op in PDF and op!=PDF[2]:
                 reader,signed=documents.inspect_pdf(paths[0])
@@ -437,6 +479,7 @@ class Studio(tk.Tk):
             if op==PHOTO[5]: ext=paths[0].suffix
             if op in PDF: ext=".zip" if op==PDF[2] else ".pdf"
             if op in VIDEO: ext=".mp4"
+            if op in UDF: ext=".pdf" if op==UDF[0] else ".docx"
             initial=(paths[0].stem if paths else "QR")+" - Pivoki"+ext
             name=filedialog.asksaveasfilename(parent=self,initialfile=initial,defaultextension=ext,filetypes=[(ext.upper(),f"*{ext}")])
             if not name:
@@ -460,6 +503,9 @@ class Studio(tk.Tk):
                             pic.save(work,format="PNG")
                             with Image.open(work) as check:
                                 check.verify()
+                    elif op in UDF:
+                        from .udf import render_pdf, export_docx
+                        (render_pdf if op==UDF[0] else export_docx)(paths[0],work)
                     elif op==PDF[2]:
                         documents.original_zip(paths,work)
                     elif op in PDF[:2]:
