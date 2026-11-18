@@ -10,6 +10,8 @@ public enum PackageEngine {
         let parent = URL(fileURLWithPath: CommandLine.arguments[0]).standardizedFileURL.deletingLastPathComponent()
         let candidates = [
             override,
+            contents.appendingPathComponent("Resources/Engine/pivoki-engine"),
+            parent.appendingPathComponent("../Resources/Engine/pivoki-engine"),
             contents.appendingPathComponent("Helpers/pivoki-engine/pivoki-engine"),
             contents.appendingPathComponent("MacOS/pivoki-engine"),
             parent.appendingPathComponent("../Helpers/pivoki-engine/pivoki-engine")

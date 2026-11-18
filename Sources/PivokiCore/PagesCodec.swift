@@ -67,7 +67,7 @@ enum PagesCodec {
             }
             let cancelled: @convention(block) () -> Bool = { token.isCancelled }
             for (name, block) in [("_pivokiBase64Encode", base64Encode as AnyObject), ("_pivokiBase64Decode", base64Decode as AnyObject), ("_pivokiUTF8Encode", utf8Encode as AnyObject), ("_pivokiUTF8Decode", utf8Decode as AnyObject), ("_pivokiRandom", random as AnyObject), ("_pivokiCheckCancelled", cancelled as AnyObject)] { context.setObject(block, forKeyedSubscript: name as NSString) }
-            var candidates: [URL] = [Bundle.main.resourceURL?.appendingPathComponent("PagesInterop.js")].compactMap{$0}
+            var candidates: [URL] = [Dependencies.appResourceDirectory?.appendingPathComponent("PagesInterop.js")].compactMap{$0}
             #if DEBUG
             let source = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("Resources/PagesInterop.js")
             candidates.append(source)

@@ -81,12 +81,20 @@ public enum ProcessRunner {
 }
 
 public enum Dependencies {
+    static var appResourceDirectory: URL? {
+        let executable = URL(fileURLWithPath: CommandLine.arguments[0]).standardizedFileURL.resolvingSymlinksInPath()
+        let directory = executable.deletingLastPathComponent()
+        if directory.lastPathComponent == "MacOS", directory.deletingLastPathComponent().lastPathComponent == "Contents" {
+            return directory.deletingLastPathComponent().appendingPathComponent("Resources", isDirectory:true)
+        }
+        return Bundle.main.resourceURL
+    }
     public static func executable(_ name: String) throws -> URL {
         let fm = FileManager.default
         let variable = "PIVOKI_" + name.uppercased()
         var paths: [String] = []
         if let override = ProcessInfo.processInfo.environment[variable] { paths.append(override) }
-        if let resource = Bundle.main.resourceURL {
+        if let resource = appResourceDirectory {
             paths.append(resource.appendingPathComponent("Tools/\(name)").path)
             if name == "exiftool" { paths.append(resource.appendingPathComponent("Tools/ExifTool/exiftool").path) }
             if name == "soffice" { paths.append(resource.appendingPathComponent("Tools/LibreOffice.app/Contents/MacOS/soffice").path) }

@@ -65,7 +65,7 @@ enum PDFPreservingCodec {
             context.setObject(cancelled, forKeyedSubscript: "_pivokiPDFCancelled" as NSString)
             context.setObject(complete, forKeyedSubscript: "_pivokiPDFComplete" as NSString)
             context.setObject(failed, forKeyedSubscript: "_pivokiPDFFailed" as NSString)
-            var roots: [URL] = [Bundle.main.resourceURL].compactMap{$0}
+            var roots: [URL] = [Dependencies.appResourceDirectory].compactMap{$0}
             #if DEBUG
             let source = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("Resources")
             roots.append(source)

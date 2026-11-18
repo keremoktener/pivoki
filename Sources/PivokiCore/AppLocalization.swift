@@ -12,7 +12,7 @@ public enum AppLocalization {
         return [source,text(source,language:language)].contains { $0.range(of:needle,options:[.caseInsensitive,.diacriticInsensitive],locale:locale) != nil }
     }
     private static let catalogBundle: Bundle = {
-        if let resource = Bundle.main.resourceURL,
+        if let resource = Dependencies.appResourceDirectory,
            let bundle = Bundle(url: resource.appendingPathComponent("Pivoki_PivokiCore.bundle")) { return bundle }
         let binary = URL(fileURLWithPath: CommandLine.arguments[0]).standardizedFileURL
         let sibling = binary.deletingLastPathComponent().appendingPathComponent("../Resources/Pivoki_PivokiCore.bundle")

@@ -8,8 +8,9 @@ if [[ ! -x "$engine_dir/pivoki-engine" ]]; then
   echo "Build the engine first, or set PIVOKI_ENGINE_DIR to its packaged directory." >&2
   exit 1
 fi
-swift build -c "$configuration" -j "${PIVOKI_BUILD_JOBS:-6}" -Xswiftc -file-prefix-map -Xswiftc "$PWD=/pivoki"
-bin=$(swift build -c "$configuration" --show-bin-path)
+scratch=${PIVOKI_SWIFT_SCRATCH:-"$PWD/.build/native-bundle"}
+swift build --scratch-path "$scratch" -c "$configuration" -j "${PIVOKI_BUILD_JOBS:-6}" -Xswiftc -file-prefix-map -Xswiftc "$PWD=/pivoki"
+bin=$(swift build --scratch-path "$scratch" -c "$configuration" --show-bin-path)
 output=${PIVOKI_APP_OUTPUT:-"$PWD/dist/Pivoki.app"}
 mkdir -p "$(dirname "$output")"
 if [[ -e "$output" ]]; then
@@ -20,11 +21,14 @@ stage=$(mktemp -d "$(dirname "$output")/.pivoki-mac.XXXXXXXX")
 trap 'rm -rf "$stage"' EXIT
 bundle="$stage/Pivoki.app"
 contents="$bundle/Contents"
-mkdir -p "$contents/MacOS" "$contents/Resources" "$contents/Helpers"
+mkdir -p "$contents/MacOS" "$contents/Resources"
+exiftool_dir=$(macos/prepare-exiftool.sh)
+mkdir -p "$contents/Resources/Tools"
+ditto "$exiftool_dir" "$contents/Resources/Tools/ExifTool"
 cp Resources/Info.plist "$contents/Info.plist"
 cp "$bin/Pivoki" "$bin/pivoki-cli" "$contents/MacOS/"
 ditto "$bin/Pivoki_PivokiCore.bundle" "$contents/Resources/Pivoki_PivokiCore.bundle"
-ditto "$engine_dir" "$contents/Helpers/pivoki-engine"
+ditto "$engine_dir" "$contents/Resources/Engine"
 ditto Resources/Localizations "$contents/Resources"
 ditto Resources/licenses "$contents/Resources/licenses"
 ditto Resources/Sounds "$contents/Resources/Sounds"

@@ -26,7 +26,7 @@ https://github.com/Hopding/pdf-lib/tree/v1.17.1
 The pinned browser bundle and dependency notices are in PDFLib.js and
 licenses/pdf-lib.txt in the application bundle.
 
-ExifTool by Phil Harvey is an optional user-installed dependency, available under the same terms as Perl (Artistic License or GPL). https://exiftool.org/
+ExifTool 13.59 by Phil Harvey is included under the same terms as Perl (Artistic License or GPL). See Tools/ExifTool/README, Tools/ExifTool/LICENSE and https://exiftool.org/.
 
 Web downloads
 yt-dlp 2026.08.19, contributors: https://github.com/yt-dlp/yt-dlp/tree/2026.08.19
