@@ -1,8 +1,10 @@
 """One JSON-compatible request/response contract for the GUI, CLI and folder rules."""
 import json
+import os
 from pathlib import Path
 import sqlite3
 import sys
+from uuid import uuid4
 
 import PIL
 from PIL import features
@@ -12,7 +14,26 @@ from .images import DECODERS, EXTENSIONS, inspect_image
 from .jobs import failure, recover, run
 from .model import FORMATS, Problem, absolute, identifier
 from .planner import plan
-from .store import database, get_package, save_package
+from .store import database, get_package, insert_history, now, save_package
+
+
+def record_export(name, paths):
+    """Add a verified Studio export to the shared library and return its entry."""
+    files = [absolute(os.fspath(p)) for p in paths]
+    if not isinstance(name, str) or not name.strip() or not files:
+        raise ValueError("An export needs a name and at least one published file.")
+    for path in files:
+        if not path.is_file():
+            raise FileNotFoundError(f"Export is unavailable: {path}")
+    try:
+        parent = os.path.commonpath([p.parent for p in files])
+    except ValueError:  # A Windows export can span independent drives.
+        parent = str(files[0].parent)
+    entry = {"status": "success", "jobId": str(uuid4()), "name": name, "directory": parent,
+             "paths": list(map(str, files)), "createdAt": now()}
+    with database() as db, db:
+        insert_history(db, entry)
+    return entry
 
 
 def dispatch(request, check=lambda: None):
@@ -46,6 +67,11 @@ def dispatch(request, check=lambda: None):
             if action == "deletePackage":
                 uid = identifier(request.get("packageId"), "packageId")
                 with db:
+                    db.execute("BEGIN IMMEDIATE")
+                    if request.get("revision") is not None:
+                        latest = get_package(db, uid)
+                        if request["revision"] != latest["revision"]:
+                            raise Problem("stale_revision", "Reload the package before deleting it.")
                     db.execute("UPDATE catalog SET active=0 WHERE id=?", (uid,))
                 return {"status": "success"}
             if action == "plan":

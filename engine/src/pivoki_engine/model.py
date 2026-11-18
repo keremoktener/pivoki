@@ -84,9 +84,9 @@ def package_definition(doc):
 
 
 def absolute(value):
-    if not isinstance(value, str) or not value.strip() or "\x00" in value or ".." in Path(value).parts:
+    if not isinstance(value, str) or not value.strip() or "\x00" in value:
         raise Problem("invalid_path", f"Invalid path: {value!r}")
-    path = Path(value).expanduser().absolute()
+    path = Path(os.path.abspath(Path(value).expanduser()))
     # macOS publishes these system aliases even when a file chooser returns a logical path.
     if sys.platform == "darwin" and len(path.parts) > 1 and path.parts[1] in ("tmp", "var", "etc"):
         alias = Path("/", path.parts[1])

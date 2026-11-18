@@ -10,7 +10,7 @@ from PIL import Image, ImageOps
 from .filesystem import output_root
 from .images import DECODERS, content_hash, encode, fingerprint, verify_image
 from .model import Problem, absolute, dump, identifier, identity, inspect_root, linked
-from .store import job_lock, now
+from .store import get_package, insert_history, job_lock, now
 
 
 def record_terminal(db, job_id, result):
@@ -26,8 +26,7 @@ def record_success(db, job_id, plan, meta):
     entry = {"name": plan["name"], "createdAt": meta["createdAt"], **result}
     with db:
         db.execute("UPDATE jobs SET state='success',result=? WHERE id=?", (dump(result), job_id))
-        db.execute("INSERT OR IGNORE INTO history VALUES (?,?)", (job_id, dump(entry)))
-        db.execute("DELETE FROM history WHERE rowid NOT IN (SELECT rowid FROM history ORDER BY rowid DESC LIMIT 50)")
+        insert_history(db, entry)
     return result
 
 
@@ -103,8 +102,9 @@ def recover_one(db, job, plan):
             if job["state"] == "publishing" and matches_publication(root, plan, meta):
                 return record_success(db, job["id"], plan, meta)
             root.cleanup(meta["stage"], meta.get("identity"))
-    except FileNotFoundError:
-        pass
+    except FileNotFoundError as exc:
+        if job["state"] == "publishing":
+            return {"status": "failed", "code": "recovery_pending", "error": str(exc), "jobId": job["id"]}
     except (OSError, Problem) as exc:
         # A disconnected or inaccessible volume can return. Keep this journal for a later reconciliation.
         return {**failure(exc), "jobId": job["id"], "code": "recovery_pending"}
@@ -151,6 +151,9 @@ def run(db, request, external_check):
         job_id = str(uuid4())
         meta = {"stage": ".pivoki-stage-" + job_id, "createdAt": now()}
         with db:
+            db.execute("BEGIN IMMEDIATE")
+            if plan["packageId"]:
+                get_package(db, plan["packageId"], plan["revision"])
             db.execute("INSERT INTO jobs (id,plan,state,meta) VALUES (?,?,'running',?)",
                        (job_id, plan_id, dump(meta)))
 
@@ -185,7 +188,7 @@ def run(db, request, external_check):
                     check()
                     try:
                         root.publish(meta["stage"], final_name)
-                    except (FileExistsError, PermissionError):
+                    except OSError:
                         check_target(root, final_name, plan)
                         raise
                     published = True

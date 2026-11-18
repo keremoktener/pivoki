@@ -50,15 +50,22 @@ def database():
 
 def get_package(db, package_id, revision=None):
     uid = identifier(package_id, "packageId")
+    rec = db.execute("SELECT rev FROM catalog WHERE id=? AND active=1", (uid,)).fetchone()
+    if not rec:
+        raise Problem("package_missing", "This package is unavailable.")
     if revision is None:
-        rec = db.execute("SELECT rev FROM catalog WHERE id=? AND active=1", (uid,)).fetchone()
-        revision = rec[0] if rec else None
+        revision = rec[0]
     if revision is not None and (type(revision) is not int or revision < 1):
         raise Problem("invalid_argument", "revision must be a positive integer.")
     rec = db.execute("SELECT doc FROM packages WHERE id=? AND rev=?", (uid, revision)).fetchone()
     if not rec:
         raise Problem("package_missing", "The package revision is unavailable.")
     return json.loads(rec[0])
+
+
+def insert_history(db, entry):
+    db.execute("INSERT INTO history VALUES (?,?)", (entry["jobId"], dump(entry)))
+    db.execute("DELETE FROM history WHERE rowid NOT IN (SELECT rowid FROM history ORDER BY rowid DESC LIMIT 50)")
 
 
 def save_package(db, doc):

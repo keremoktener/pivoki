@@ -247,3 +247,36 @@ def test_same_revision_and_id_cannot_be_rebound_to_different_plan(tmp_path):
     bad = rpc("plan", planId=pid, inputs=[str(src)], outputRoot=str(tmp_path / "another"),
               packageId=DEFAULT, revision=1, code=1)
     assert bad["code"] == "plan_id_conflict"
+
+
+def test_delete_blocks_new_runs_but_prior_success_remains_idempotent(tmp_path):
+    img = picture(tmp_path / "source.png")
+    package = rpc("savePackage", package={"name":"One", "outputs":[
+        {"format":"png", "maxEdge":100, "relativeDir":"images"}]})["package"]
+    req = dict(inputs=[str(img)], outputRoot=str(tmp_path / "out"), packageId=package["packageId"], revision=1)
+    plan_id = str(uuid.uuid4())
+    started = rpc("plan", planId=plan_id, **req)
+    completed = rpc("run", planId=plan_id)
+    awaiting = rpc("plan", **req)
+    rpc("deletePackage", packageId=package["packageId"])
+    assert rpc("plan", **req, code=1)["code"] == "package_missing"
+    assert rpc("run", planId=awaiting["planId"], code=1)["code"] == "package_missing"
+    assert rpc("plan", planId=plan_id, **req) == started
+    assert rpc("run", planId=plan_id) == completed
+
+
+def test_studio_and_package_exports_share_history_limit(tmp_path):
+    from pivoki_engine.service import record_export
+    img = picture(tmp_path / "exports" / "a" / "studio.png")
+    other = picture(tmp_path / "exports" / "b" / "second.jpg")
+    preview = plan([img], tmp_path/"bundle")
+    bundle = rpc("run", planId=preview["planId"])
+    for number in range(50):
+        result = record_export(f"Studio {number}", [img, other])
+    assert result["directory"] == str(img.parent.parent)
+    assert result["paths"] == [str(img), str(other)]
+    history = rpc("history")["jobs"]
+    assert len(history) == len({row["jobId"] for row in history}) == 50
+    assert history[0]["jobId"] == result["jobId"]
+    assert history[0]["createdAt"]
+    assert not any(row["jobId"] == bundle["jobId"] for row in history)
