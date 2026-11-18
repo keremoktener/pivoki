@@ -47,7 +47,7 @@ class RulePanel(ttk.Frame):
         from pivoki_engine.service import dispatch
         self.defs=dispatch({"action":"packages"}).get("packages",[])
         self.packages.configure(values=[f"{p['name']} · r{p['revision']}" for p in self.defs])
-        if self.defs and self.packages.current()<0:
+        if self.defs and self.packages.get() not in self.packages["values"]:
             self.packages.current(0)
         selected=self.table.selection()
         self.table.delete(*self.table.get_children())

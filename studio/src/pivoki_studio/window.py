@@ -479,7 +479,13 @@ class Studio(tk.Tk):
             self.status.set(str(exc))
 
     def success(self,target):
-        self.status.set(f"Kaydedildi · {target}")
+        from pivoki_engine.service import record_export
+        saved = sorted(target.glob("*.svg")) if target.is_dir() else [target]
+        try:
+            record_export(self.op.get(), saved)
+            self.status.set(f"Kaydedildi · {target}")
+        except Exception as exc:
+            self.status.set(f"Kaydedildi · {target} · Geçmişe yazılamadı: {exc}")
         if messagebox.askyesno("Çıktı hazır",f"{target}\n\nKlasörde gösterilsin mi?",parent=self):
             show_path(target if target.is_dir() else target.parent)
 
