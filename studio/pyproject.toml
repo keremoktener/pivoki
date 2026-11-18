@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pivoki-studio"
+version = "0.1.0"
+description = "Local editors and watched-folder rules for Pivoki"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = [
+    "Pillow>=11.3,<13", "qrcode>=8,<9", "zxing-cpp>=2.3,<4",
+    "pypdf>=6,<8", "reportlab>=4,<5"
+]
+
+[project.optional-dependencies]
+raw = ["rawpy>=0.25,<1"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
