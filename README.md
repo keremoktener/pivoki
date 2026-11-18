@@ -12,4 +12,4 @@ Development and platform acceptance are in progress. Build instructions and veri
 
 ## License
 
-Pivoki uses the MIT license. The original Nashi copyright and license are preserved. Components distributed with the native apps retain their respective license notices.
+Original Pivoki material is licensed for personal, noncommercial use. Selling or sublicensing it is prohibited. The Nashi portions retain their original MIT license, and third-party components retain their own licenses. See the [license terms](LICENSE).
