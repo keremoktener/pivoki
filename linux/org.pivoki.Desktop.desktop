@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Pivoki
+Comment=Preview and create local image packages
+Comment[tr]=Yerel görsel paketlerini önizleyin ve oluşturun
+Exec=pivoki-desktop %F
+TryExec=pivoki-desktop
+Icon=applications-graphics
+Terminal=false
+Categories=Graphics;Photography;
+MimeType=image/png;image/jpeg;image/webp;
+StartupNotify=true

@@ -1,0 +1,26 @@
+name: Linux desktop
+on:
+  push:
+    paths: ['linux/**', 'engine/**', 'studio/**', '.github/workflows/linux-desktop.yml']
+  pull_request:
+    paths: ['linux/**', 'engine/**', 'studio/**', '.github/workflows/linux-desktop.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-sessions:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install X11 and Wayland test sessions
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-venv python3-tk xvfb xauth xdotool weston xwayland desktop-file-utils ffmpeg
+      - name: Install the user desktop entry and run the native workflow
+        run: |
+          linux/install.sh --prefix "$RUNNER_TEMP/pivoki user"
+          desktop-file-validate "$RUNNER_TEMP/pivoki user/share/applications/org.pivoki.Desktop.desktop"
+          py="$RUNNER_TEMP/pivoki user/share/pivoki/desktop-venv/bin/python"
+          "$py" -m pip install pytest
+          XDG_SESSION_TYPE=x11 xvfb-run -a "$py" -m pytest -q linux/tests engine/tests
+          xvfb-run -a -s "-screen 0 1440x1060x24" linux/tests/wayland-session.sh "$py" -m pytest -q linux/tests
