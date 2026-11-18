@@ -11,8 +11,16 @@ public enum AppLocalization {
         guard !needle.isEmpty else { return true }
         return [source,text(source,language:language)].contains { $0.range(of:needle,options:[.caseInsensitive,.diacriticInsensitive],locale:locale) != nil }
     }
+    private static let catalogBundle: Bundle = {
+        if let resource = Bundle.main.resourceURL,
+           let bundle = Bundle(url: resource.appendingPathComponent("Pivoki_PivokiCore.bundle")) { return bundle }
+        let binary = URL(fileURLWithPath: CommandLine.arguments[0]).standardizedFileURL
+        let sibling = binary.deletingLastPathComponent().appendingPathComponent("../Resources/Pivoki_PivokiCore.bundle")
+        if let bundle = Bundle(url: sibling) { return bundle }
+        return Bundle.module
+    }()
     private static func loadCatalog(_ name:String) -> [String:String] {
-        guard let url = Bundle.module.url(forResource: name, withExtension: "json", subdirectory: "Resources"),
+        guard let url = catalogBundle.url(forResource: name, withExtension: "json", subdirectory: "Resources"),
               let data = try? Data(contentsOf: url),
               let values = try? JSONDecoder().decode([String:String].self, from: data) else { return [:] }
         return values
@@ -29,7 +37,7 @@ public enum AppLocalization {
     }
     /// Product and key names that keep Latin capitals in Turkish upper case (SHIFT, not SHİFT).
     public static let latinWords: Set<String> = {
-        guard let url = Bundle.module.url(forResource: "LatinWords", withExtension: "json", subdirectory: "Resources"),
+        guard let url = catalogBundle.url(forResource: "LatinWords", withExtension: "json", subdirectory: "Resources"),
               let data = try? Data(contentsOf: url),
               let words = try? JSONDecoder().decode([String].self, from: data) else { return [] }
         return Set(words)
