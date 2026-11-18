@@ -97,7 +97,18 @@ enum PagesCodec {
             let margins = ["topMargin", "rightMargin", "bottomMargin", "leftMargin"].map { "\(number(setup[$0], 56.69))pt" }.joined(separator: " ")
             var content = ""
             if let header = model["header"] as? String, !header.isEmpty { content += "<header>\(escape(header).replacingOccurrences(of: "\n", with: "<br/>"))</header>" }
-            for block in model["blocks"] as? [[String: Any]] ?? [] {
+            let blocks = model["blocks"] as? [[String: Any]] ?? []
+            var index = 0
+            while index < blocks.count {
+                var block = blocks[index]
+                if index + 2 < blocks.count, isPageStartMarker(block, followedBy: blocks[index+1], content: blocks[index+2]) {
+                    index += 2
+                    block = blocks[index]
+                    var paragraph = block["paragraph"] as? [String:Any] ?? [:]
+                    paragraph["pageBreakBefore"] = true
+                    block["paragraph"] = paragraph
+                }
+                index += 1
                 try token.check()
                 if block["type"] as? String == "table" { content += table(block); continue }
                 let paragraph = block["paragraph"] as? [String: Any] ?? [:]
@@ -124,6 +135,17 @@ enum PagesCodec {
             }
             if let footer = model["footer"] as? String, !footer.isEmpty { content += "<footer>\(escape(footer).replacingOccurrences(of: "\n", with: "<br/>"))</footer>" }
             return "<!DOCTYPE html><html><head><meta charset=\"utf-8\"/><title>Pages document</title><style>@page{size:\(width)pt \(height)pt;margin:\(margins)}body{font:12pt Helvetica,Arial,sans-serif}p{white-space:pre-wrap;margin:0 0 8pt}table{border-collapse:collapse;page-break-inside:auto}td,th{border:1px solid #888;padding:4pt;white-space:pre-wrap}img{max-width:100%;height:auto}header,footer{margin:8pt 0}</style></head><body>\(content)</body></html>"
+        }
+        /// Word can encode a page break as an empty paragraph and a one-point
+        /// insertion marker. Place that break on the following content paragraph
+        /// so HTML importers do not insert two extra printable blank lines.
+        private static func isPageStartMarker(_ marker: [String:Any], followedBy anchor: [String:Any], content: [String:Any]) -> Bool {
+            guard (marker["paragraph"] as? [String:Any])?["pageBreakBefore"] as? Bool == true,
+                  (marker["runs"] as? [[String:Any]])?.isEmpty == true,
+                  (anchor["runs"] as? [[String:Any]])?.isEmpty == true,
+                  let size = (anchor["character"] as? [String:Any])?["fontSize"] as? NSNumber, size.doubleValue <= 1
+            else { return false }
+            return content["type"] as? String == "paragraph" && (content["runs"] as? [[String:Any]])?.isEmpty == false
         }
         static func table(_ block: [String: Any]) -> String {
             let rows = block["rows"] as? [[[String: Any]]] ?? []

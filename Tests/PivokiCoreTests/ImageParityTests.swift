@@ -320,7 +320,6 @@ final class ImageParityTests: XCTestCase {
         let source=folder.appendingPathComponent("custom.jpg");try ImageEngine.write(canvas(80,60),to:source,quality:0.65)
         let packet=folder.appendingPathComponent("fixture.xmp")
         try Data("<x:xmpmeta xmlns:x='adobe:ns:meta/'><rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'><rdf:Description rdf:about='' xmlns:custom='https://example.com/test-schema/' custom:Other='Keep this'><custom:Secret>Before</custom:Secret></rdf:Description></rdf:RDF></x:xmpmeta>".utf8).write(to:packet)
-        let root=URL(fileURLWithPath:#filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
         let script=try Dependencies.executable("exiftool")
         try ProcessRunner.run(URL(fileURLWithPath:"/usr/bin/perl"),[script.path,"-config","","-overwrite_original","-XMP<="+packet.path,source.path])
         let original=try Data(contentsOf:source),hash=try ImageMetadataEngine.encodedImageHash(source)

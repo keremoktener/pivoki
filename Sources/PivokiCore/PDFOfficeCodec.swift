@@ -113,10 +113,20 @@ enum PDFOfficeCodec {
             guard bounds.width.isFinite, bounds.height.isFinite, bounds.width > 0, bounds.height > 0 else {
                 throw PivokiError.invalidInput("PDF page \(index + 1) has an invalid size.")
             }
-            let size = NSSize(width: max(1, bounds.width * 2), height: max(1, bounds.height * 2))
-            let image = page.thumbnail(of: size, for: .cropBox)
-            var rect = CGRect(origin: .zero, size: size)
-            guard let cg = image.cgImage(forProposedRect: &rect, context: nil, hints: nil), let png = NSBitmapImageRep(cgImage: cg).representation(using: .png, properties: [:]) else {
+            // PDFKit thumbnails use the current display profile. Render explicitly
+            // in sRGB so embedded slide images retain their source colors on other displays.
+            let pixelWidth = max(1, ceil(bounds.width * 2)), pixelHeight = max(1, ceil(bounds.height * 2))
+            guard pixelWidth <= 32000, pixelHeight <= 32000, pixelWidth * pixelHeight <= 100_000_000,
+                  let space = CGColorSpace(name: CGColorSpace.sRGB),
+                  let bitmap = CGContext(data: nil, width: Int(pixelWidth), height: Int(pixelHeight), bitsPerComponent: 8,
+                                         bytesPerRow: 0, space: space, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
+                throw PivokiError.failed("PDF page \(index + 1) is too large to render.")
+            }
+            bitmap.setFillColor(CGColor(gray: 1, alpha: 1))
+            bitmap.fill(CGRect(x: 0, y: 0, width: pixelWidth, height: pixelHeight))
+            bitmap.scaleBy(x: pixelWidth / bounds.width, y: pixelHeight / bounds.height)
+            page.draw(with: .cropBox, to: bitmap)
+            guard let cg = bitmap.makeImage(), let png = NSBitmapImageRep(cgImage: cg).representation(using: .png, properties: [:]) else {
                 throw PivokiError.failed("PDF page \(index + 1) could not be rendered.")
             }
             // A presentation has one shared canvas. Match the first displayed

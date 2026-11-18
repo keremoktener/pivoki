@@ -22,7 +22,32 @@ public enum ExternalToolSetup {
         guard let values=try? url.resolvingSymlinksInPath().resourceValues(forKeys:[.isRegularFileKey,.fileSizeKey]) else{return false}
         return FileManager.default.isExecutableFile(atPath:url.path) && values.isRegularFile == true && (values.fileSize ?? 0)>0
     }
-    public static var status:ToolSetupStatus { ToolSetupStatus { try? Dependencies.executable($0) } }
+    private static let encoderLock = NSLock()
+    private static var lastEncoderCheck: (path: String, modified: Date?, complete: Bool)?
+    private static func supportsRequiredEncoders(_ url: URL) -> Bool {
+        encoderLock.lock()
+        defer { encoderLock.unlock() }
+        let actual = url.resolvingSymlinksInPath()
+        let modified = try? actual.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
+        if let previous = lastEncoderCheck, previous.path == actual.path && previous.modified == modified {
+            return previous.complete
+        }
+        let list = (try? ProcessRunner.run(actual, ["-hide_banner", "-encoders"]).text) ?? ""
+        let encoders = Set(list.split(separator: "\n").compactMap { line in
+            let fields = line.split(whereSeparator: \.isWhitespace)
+            return fields.count > 1 ? String(fields[1]) : nil
+        })
+        let complete = ["libwebp", "libvorbis", "libx264"].allSatisfy(encoders.contains)
+        lastEncoderCheck = (actual.path, modified, complete)
+        return complete
+    }
+    public static var status: ToolSetupStatus {
+        var status = ToolSetupStatus { try? Dependencies.executable($0) }
+        if status.mediaReady, let ffmpeg = try? Dependencies.executable("ffmpeg") {
+            status.mediaReady = supportsRequiredEncoders(ffmpeg)
+        }
+        return status
+    }
     public static var mediaReady:Bool { status.mediaReady }
     public static var officeReady:Bool { status.officeReady }
     public static func installMedia(token:CancellationToken,progress:@escaping @Sendable (Double?,String)->Void) async throws {
@@ -70,7 +95,7 @@ public enum ExternalToolSetup {
         let stage=root.appendingPathComponent(".office-\(UUID().uuidString)",isDirectory:true)
         try fm.createDirectory(at:stage,withIntermediateDirectories:false);defer { try? fm.removeItem(at:stage) }
         let image=stage.appendingPathComponent("LibreOffice.dmg")
-        try await CheckedToolDownload.fetch(URL(string:"https://download.documentfoundation.org/libreoffice/stable/26.8.1/mac/aarch64/LibreOffice_26.8.1_MacOS_aarch64.dmg")!,to:image,maximum:400*1024*1024) { progress($0.map{$0*0.8},"Downloading LibreOffice 26.8.1…") }
+        try await CheckedToolDownload.fetch(URL(string:"https://downloadarchive.documentfoundation.org/libreoffice/old/26.8.1.1/mac/aarch64/LibreOffice_26.8.1.1_MacOS_aarch64.dmg")!,to:image,maximum:400*1024*1024) { progress($0.map{$0*0.8},"Downloading LibreOffice 26.8.1…") }
         try verify(image,digest:"ca074e0b13571efb30a31fc531c5f95e997030637325e5d5de92d67aefdf0dfc")
         try token.check();try Task.checkCancellation();progress(nil,"Verifying and preparing office tools…")
         let mount=stage.appendingPathComponent("mount",isDirectory:true);try fm.createDirectory(at:mount,withIntermediateDirectories:false)
