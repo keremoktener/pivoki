@@ -9,20 +9,25 @@ from pathlib import Path
 
 @contextmanager
 def new_file(target):
-    target = Path(target).absolute()
-    if not target.parent.is_dir():
+    from pivoki_engine.filesystem import output_root
+    from pivoki_engine.model import inspect_root
+
+    requested = Path(target).absolute()
+    parent = requested.parent.resolve(strict=True)
+    target = parent / requested.name
+    if not parent.is_dir():
         raise ValueError("Önce mevcut bir hedef klasör seçin.")
     if os.path.lexists(target):
         raise FileExistsError(f"Bu ad kullanımda. Başka bir ad seçin. {target}")
-    with tempfile.TemporaryDirectory(prefix=".pivoki-studio-", dir=target.parent) as work:
-        prepared = Path(work) / target.name
-        yield prepared
-        if not prepared.is_file() or prepared.stat().st_size == 0:
-            raise ValueError("Çıktı boş.")
-        if os.name == "nt":
-            os.rename(prepared, target)  # Windows fails when the destination exists.
-        else:
-            os.link(prepared, target)
+    # Use the engine's exclusive rename on the target volume. This also works
+    # with removable filesystems where hard links are unavailable.
+    with output_root(parent, inspect_root(parent)) as root:
+        with tempfile.TemporaryDirectory(prefix=".pivoki-studio-", dir=parent) as work:
+            prepared = Path(work) / target.name
+            yield prepared
+            if not prepared.is_file() or prepared.is_symlink() or prepared.stat().st_size == 0:
+                raise ValueError("Çıktı boş veya doğrulanamadı.")
+            root.publish(str(prepared.relative_to(parent)), target.name)
 
 
 def tool(name):
