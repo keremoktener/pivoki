@@ -1,7 +1,6 @@
 import AppKit
 import SwiftUI
 import PivokiCore
-import ServiceManagement
 import Carbon
 import Combine
 import ApplicationServices
@@ -164,6 +163,7 @@ enum StatusMenuItem:String,CaseIterable,Identifiable {
     var windowManagement:WindowManagementController!
 
     func applicationDidFinishLaunching(_ notification:Notification) {
+        LoginItemController.shared.applyDefault()
         PivokiAppearance.apply()
         UserDefaults.standard.register(defaults:["enabled":true,"reveal":true,"sound":true,"convertKey":"shift","toolsKey":"command","actionsKey":"control","wheelScale":1.0,"windowManagementEnabled":true])
         let mainMenu=NSMenu();let appMenu=NSMenu()
@@ -255,7 +255,7 @@ enum StatusMenuItem:String,CaseIterable,Identifiable {
         state.onEPUBOptions = { [weak self] in guard let self else { return };let window=self.makeWindow(title:"Convert to EPUB",size:NSSize(width:530,height:390),view:EPUBOptionsView(state:self.state,inputs:self.state.inputs));self.state.retainToolWindow(window);window.makeKeyAndOrderFront(nil);NSApp.activate(ignoringOtherApps:true) }
         state.onJobStarted = { [weak self] in self?.successToast.dismiss();self?.showProgress() }
         state.onSuccess = { [weak self] notice in self?.progressToast.dismiss();self?.successToast.show(notice) }
-        let loginLaunch=NSAppleEventManager.shared().currentAppleEvent?.paramDescriptor(forKeyword:keyAELaunchedAsLogInItem)?.booleanValue ?? false
+        let loginLaunch = Self.isLoginLaunch(NSAppleEventManager.shared().currentAppleEvent)
         if !loginLaunch,!CommandLine.arguments.contains("--background") {
             showHome()
         }
@@ -263,6 +263,11 @@ enum StatusMenuItem:String,CaseIterable,Identifiable {
         if let index=CommandLine.arguments.firstIndex(of:"--open"), index+1<CommandLine.arguments.count {
             state.inputs=CommandLine.arguments[(index+1)...].map{URL(fileURLWithPath:$0)};showHome()
         }
+    }
+    nonisolated static func isLoginLaunch(_ event: NSAppleEventDescriptor?) -> Bool {
+        guard let event, event.eventID == kAEOpenApplication else { return false }
+        return event.paramDescriptor(forKeyword: keyAEPropData)?.enumCodeValue == keyAELaunchedAsLogInItem
+            || event.paramDescriptor(forKeyword: keyAELaunchedAsLogInItem)?.booleanValue == true
     }
     @objc func showLibrary() {showHome();state.libraryVisible=true;state.selectedHistoryID=state.history.first?.id}
     @objc func findInLibrary() {showLibrary();state.libraryFocusRequest+=1}

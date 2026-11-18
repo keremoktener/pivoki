@@ -1549,6 +1549,7 @@
 "MOVE DOWN" = "MOVE DOWN";
 "MOVE HERE" = "MOVE HERE";
 "MOVE LEFT" = "MOVE LEFT";
+"MOVE PIVOKI TO APPLICATIONS AND OPEN IT THERE TO ENABLE LAUNCH AT LOGIN." = "MOVE PIVOKI TO APPLICATIONS AND OPEN IT THERE TO ENABLE LAUNCH AT LOGIN.";
 "MOVE REGULAR FILES AND FOLDERS WITHOUT SYMBOLIC LINKS." = "MOVE REGULAR FILES AND FOLDERS WITHOUT SYMBOLIC LINKS.";
 "MOVE RIGHT" = "MOVE RIGHT";
 "MOVE UP" = "MOVE UP";
@@ -1596,6 +1597,7 @@
 "Move & share" = "Move & share";
 "Move Here" = "Move Here";
 "Move Left" = "Move Left";
+"Move Pivoki to Applications and open it there to enable launch at login." = "Move Pivoki to Applications and open it there to enable launch at login.";
 "Move Right" = "Move Right";
 "Move down" = "Move down";
 "Move left" = "Move left";

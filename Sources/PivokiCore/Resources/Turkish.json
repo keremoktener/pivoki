@@ -23,6 +23,7 @@
   "Wheel finish": "Çark görünümü",
   "Glass": "Cam",
   "Solid": "Düz",
+  "Move Pivoki to Applications and open it there to enable launch at login.": "Oturum açıldığında başlatmayı etkinleştirmek için Pivoki’yi Uygulamalar klasörüne taşı ve oradan aç.",
   "Launch at login": "Oturum açıldığında başlat",
   "Launch at login is unavailable for this copy.": "Bu kopyada otomatik başlatma kullanılamıyor.",
   "Allow Pivoki in macOS Login Items.": "macOS Giriş Öğeleri bölümünden Pivoki'ye izin ver.",

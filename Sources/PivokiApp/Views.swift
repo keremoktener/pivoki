@@ -2,7 +2,6 @@ import AppKit
 import SwiftUI
 import PivokiCore
 import UniformTypeIdentifiers
-import ServiceManagement
 import ApplicationServices
 
 struct SettingsView:View {
@@ -19,10 +18,6 @@ struct SettingsView:View {
     @AppStorage("floatWheelBehavior") private var floatBehavior="createNew"
     @AppStorage("fileActionsTerminalApplication") private var terminalApplication="com.apple.Terminal"
     @State private var shortcutsRevision=0
-    @State private var launch=false
-    @State private var launchNeedsApproval=false
-    @State private var launchUnavailable=false
-    @State private var launchError:String?
     @AppStorage("reduceAnimations") private var reduceAnimations=false
     @AppStorage("appAppearance") private var appAppearance="system"
     @AppStorage("appLanguage") private var appLanguage="en"
@@ -55,7 +50,6 @@ struct SettingsView:View {
             .frame(maxWidth:.infinity,maxHeight:.infinity).id(section).transition(.opacity)
         }.frame(minWidth:790,minHeight:590).background(PivokiPalette.canvas).tint(.pivoki)
         .buttonStyle(PivokiButtonStyle()).toggleStyle(.switch).groupBoxStyle(PivokiGroupBoxStyle()).pivokiAnimation(value:section)
-        .onAppear(perform:readLaunchStatus)
         .onReceive(NotificationCenter.default.publisher(for:Notification.Name("PivokiWheelSettings"))) { _ in section = .wheel }
         .onChange(of:feedback) { UserDefaults.standard.set($0,forKey:"sound") }
         .onChange(of:appAppearance) { PivokiAppearance.apply($0) }
@@ -90,10 +84,7 @@ struct SettingsView:View {
                     HStack { Text("Appearance");Spacer();Picker("Appearance",selection:$appAppearance) { Text("System").tag("system");Text("Light").tag("light");Text("Dark").tag("dark") }.labelsHidden().pickerStyle(.segmented).frame(width:230) }
                     HStack { Text("Wheel finish");Spacer();Picker("Wheel finish",selection:$fanTheme) { Text("Glass").tag("glass");Text("Solid").tag("metallic") }.labelsHidden().pickerStyle(.segmented).frame(width:230) }
                     Divider()
-                    Toggle("Launch at login",isOn:Binding(get:{launch},set:updateLaunch)).disabled(launchUnavailable)
-                    if launchNeedsApproval { HStack { Text("Allow Pivoki in macOS Login Items.").font(.caption).foregroundStyle(.secondary);Spacer();Button("Open Login Items") { SMAppService.openSystemSettingsLoginItems() } } }
-                    if launchUnavailable { Text("Launch at login is unavailable for this copy.").font(.caption).foregroundStyle(.secondary) }
-                    if let launchError { Text(launchError).font(.caption).foregroundStyle(.secondary) }
+                    LoginItemToggle(title: "Launch at login")
                     HStack {
                         Toggle("Sound and haptic feedback",isOn:$feedback)
                         Button("Try feedback") { _ = WheelFeedback.shared.testPreview() }
@@ -175,14 +166,7 @@ struct SettingsView:View {
     private func shortcut(_ wheel:WheelShortcut)->Binding<UInt> {
         Binding(get:{ModifierPreferences.chord(for:wheel).rawValue},set:{if ModifierPreferences.set(.init(rawValue:$0),for:wheel) { shortcutsRevision += 1 }})
     }
-    private func readLaunchStatus() {
-        let status=SMAppService.mainApp.status
-        launch=status == .enabled || status == .requiresApproval;launchNeedsApproval=status == .requiresApproval;launchUnavailable=status == .notFound
-    }
-    private func updateLaunch(_ value:Bool) {
-        do { if value { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() };launchError=nil } catch { launchError=error.localizedDescription }
-        readLaunchStatus()
-    }
+
 }
 
 enum SettingsSection:String,CaseIterable,Identifiable {

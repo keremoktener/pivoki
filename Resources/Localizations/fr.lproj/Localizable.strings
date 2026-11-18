@@ -1549,6 +1549,7 @@
 "MOVE DOWN" = "DÉPLACER VERS LE BAS";
 "MOVE HERE" = "DÉPLACER ICI";
 "MOVE LEFT" = "DÉPLACER VERS LA GAUCHE";
+"MOVE PIVOKI TO APPLICATIONS AND OPEN IT THERE TO ENABLE LAUNCH AT LOGIN." = "POUR LANCER PIVOKI À L’OUVERTURE DE SESSION, DÉPLACEZ L’APPLICATION DANS LE DOSSIER APPLICATIONS, PUIS OUVREZ-LA DEPUIS CE DOSSIER.";
 "MOVE REGULAR FILES AND FOLDERS WITHOUT SYMBOLIC LINKS." = "DÉPLACEZ DES FICHIERS ET DOSSIERS ORDINAIRES, SANS LIENS SYMBOLIQUES.";
 "MOVE RIGHT" = "DÉPLACER VERS LA DROITE";
 "MOVE UP" = "DÉPLACER VERS LE HAUT";
@@ -1596,6 +1597,7 @@
 "Move & share" = "Déplacer et partager";
 "Move Here" = "Déplacer ici";
 "Move Left" = "Déplacer à gauche";
+"Move Pivoki to Applications and open it there to enable launch at login." = "Pour lancer Pivoki à l’ouverture de session, déplacez l’application dans le dossier Applications, puis ouvrez-la depuis ce dossier.";
 "Move Right" = "Déplacer à droite";
 "Move down" = "Déplacer vers le bas";
 "Move left" = "Déplacer vers la gauche";

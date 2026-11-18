@@ -1549,6 +1549,7 @@
 "MOVE DOWN" = "AŞAĞI TAŞI";
 "MOVE HERE" = "BURAYA TAŞI";
 "MOVE LEFT" = "SOLA TAŞI";
+"MOVE PIVOKI TO APPLICATIONS AND OPEN IT THERE TO ENABLE LAUNCH AT LOGIN." = "OTURUM AÇILDIĞINDA BAŞLATMAYI ETKİNLEŞTİRMEK İÇİN PIVOKI’Yİ UYGULAMALAR KLASÖRÜNE TAŞI VE ORADAN AÇ.";
 "MOVE REGULAR FILES AND FOLDERS WITHOUT SYMBOLIC LINKS." = "SEMBOLİK BAĞLANTI İÇERMEYEN NORMAL DOSYA VE KLASÖRLERİ TAŞI.";
 "MOVE RIGHT" = "SAĞA TAŞI";
 "MOVE UP" = "YUKARI TAŞI";
@@ -1596,6 +1597,7 @@
 "Move & share" = "Taşı ve paylaş";
 "Move Here" = "Buraya Taşı";
 "Move Left" = "Sola Taşı";
+"Move Pivoki to Applications and open it there to enable launch at login." = "Oturum açıldığında başlatmayı etkinleştirmek için Pivoki’yi Uygulamalar klasörüne taşı ve oradan aç.";
 "Move Right" = "Sağa Taşı";
 "Move down" = "Aşağı taşı";
 "Move left" = "Sola taşı";

@@ -13,6 +13,7 @@ let package = Package(
         .target(name: "PivokiCore", resources: [.copy("Resources")]),
         .executableTarget(name: "PivokiApp", dependencies: ["PivokiCore"]),
         .executableTarget(name: "PivokiCLI", dependencies: ["PivokiCore"]),
+        .testTarget(name: "PivokiAppTests", dependencies: ["PivokiApp"]),
         .testTarget(name: "PivokiCoreTests", dependencies: ["PivokiCore"], resources: [.copy("Fixtures")])
     ],
     swiftLanguageModes: [.v5]

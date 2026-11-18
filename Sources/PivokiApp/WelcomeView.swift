@@ -1,6 +1,5 @@
 import AppKit
 import SwiftUI
-import ServiceManagement
 import PivokiCore
 
 struct WelcomeView:View {
@@ -10,10 +9,6 @@ struct WelcomeView:View {
     @State private var page=0
     @State private var folderAllowed=false
     @State private var folderError:String?
-    @State private var launchAtLogin=false
-    @State private var launchNeedsApproval=false
-    @State private var launchUnavailable=false
-    @State private var launchError:String?
     private let names=["Hello","Convert","Fine-tune","Move & share","Folders","Ready"]
     private var toolsReady:Bool { ExternalToolSetup.status.ready }
     private var titles:[String] { ["Nice files.\nNo fuss.","A new form.\nIn a tap.","Little tweaks.\nBig difference.","Keep things\nmoving.","Right where\nyou want it.",toolsReady ? "You’re all set.\nMake something good.":"One last step.\nSet up your tools."] }
@@ -47,8 +42,7 @@ struct WelcomeView:View {
         }.frame(width:760,height:520).background(PivokiPalette.canvas).clipShape(RoundedRectangle(cornerRadius:28,style:.continuous))
             .overlay(RoundedRectangle(cornerRadius:28).strokeBorder(PivokiPalette.border))
             .tint(.pivoki).pivokiAnimation(value:page)
-            .onAppear { folderAllowed = !FolderAccessPreferences.grants().isEmpty;readLaunchStatus() }
-            .onChange(of:page) { if $0==5 { readLaunchStatus() } }
+            .onAppear { folderAllowed = !FolderAccessPreferences.grants().isEmpty }
     }
     @ViewBuilder private var detail:some View {
         switch page {
@@ -66,10 +60,7 @@ struct WelcomeView:View {
             if let folderError { Text(folderError).font(.caption).foregroundStyle(.orange).lineLimit(2) }
         default:
             Text(toolsReady ? "Your tools are ready. Let’s put that next file to good use.":"Next, download the missing tools for media and Office files. Tools already on your computer do not need another download.").font(.system(size:13)).foregroundStyle(.secondary)
-            Toggle("Ready when you log in",isOn:Binding(get:{launchAtLogin},set:updateLaunch)).toggleStyle(.switch).font(.system(size:12)).disabled(launchUnavailable)
-            if launchNeedsApproval { Button("Open Login Items") { SMAppService.openSystemSettingsLoginItems() }.buttonStyle(PivokiButtonStyle(.secondary,compact:true)) }
-            if launchUnavailable { Text("Launch at login is unavailable for this copy.").font(.caption).foregroundStyle(.secondary) }
-            if let launchError { Text(launchError).font(.caption).foregroundStyle(.orange).lineLimit(2) }
+            LoginItemToggle(title: "Ready when you log in").toggleStyle(.switch).font(.system(size:12))
         }
     }
     private var converterItems: [WheelItem] {
@@ -115,23 +106,6 @@ struct WelcomeView:View {
         }
     }
 
-    private func readLaunchStatus() {
-        let status = SMAppService.mainApp.status
-        launchAtLogin = status == .enabled || status == .requiresApproval
-        launchNeedsApproval = status == .requiresApproval
-        launchUnavailable = status == .notFound
-    }
-
-    private func updateLaunch(_ value: Bool) {
-        do {
-            if value { try SMAppService.mainApp.register() }
-            else { try SMAppService.mainApp.unregister() }
-            launchError = nil
-        } catch {
-            launchError = error.localizedDescription
-        }
-        readLaunchStatus()
-    }
 }
 
 struct WelcomeWheelPreview: NSViewRepresentable {

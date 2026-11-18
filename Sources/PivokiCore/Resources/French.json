@@ -23,6 +23,7 @@
   "Wheel finish": "Finition de la roue",
   "Glass": "Verre",
   "Solid": "Plein",
+  "Move Pivoki to Applications and open it there to enable launch at login.": "Pour lancer Pivoki à l’ouverture de session, déplacez l’application dans le dossier Applications, puis ouvrez-la depuis ce dossier.",
   "Launch at login": "Ouvrir avec la session",
   "Launch at login is unavailable for this copy.": "L’option Ouvrir avec la session n’est pas disponible pour cette copie.",
   "Allow Pivoki in macOS Login Items.": "Autorisez Pivoki dans les éléments d’ouverture de macOS.",
