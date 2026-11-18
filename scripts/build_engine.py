@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def gather_notices(directory):
     for name in ("pillow", "pillow-heif", "qrcode", "zxing-cpp", "pypdf", "reportlab",
-                 "rawpy", "numpy", "charset-normalizer", "pivoki-engine", "pivoki-studio", "colorama"):
+                 "defusedxml", "python-docx", "lxml", "rawpy", "numpy", "charset-normalizer", "pivoki-engine", "pivoki-studio", "colorama"):
         try:
             package = md.distribution(name)
         except md.PackageNotFoundError:

@@ -10,7 +10,8 @@ requires-python = ">=3.11"
 license = "LicenseRef-Pivoki-Personal-Noncommercial-1.0"
 dependencies = [
     "Pillow>=11.3,<13", "qrcode>=8,<9", "zxing-cpp>=2.3,<4",
-    "pypdf>=6,<8", "reportlab>=4,<5"
+    "pypdf>=6,<8", "reportlab>=4,<5", "python-docx>=1.1,<2",
+    "defusedxml>=0.7,<1", "pivoki-engine==0.1.0"
 ]
 
 [project.optional-dependencies]

@@ -39,3 +39,15 @@ jobs:
       - if: runner.os == 'macOS'
         name: Build the native Swift desktop and CLI
         run: swift build -j 4
+      - if: runner.os == 'Windows'
+        name: Verify the WPF package window with the bundled helper
+        shell: pwsh
+        run: |
+          python -m pip install "pyinstaller>=6.15,<7"
+          python scripts/build_engine.py
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          $env:PIVOKI_ENGINE = (Resolve-Path dist/engine/pivoki-engine/pivoki-engine.exe).Path
+          $exe = Get-ChildItem windows/Pivoki.Windows/bin/Release -Recurse -Filter Pivoki.exe | Select-Object -First 1
+          $job = Start-Process -FilePath $exe.FullName -ArgumentList '--verify-package-window' -PassThru
+          if (-not $job.WaitForExit(180000)) { $job.Kill(); throw "Package window check timed out" }
+          exit $job.ExitCode
