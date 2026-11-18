@@ -15,6 +15,23 @@ public partial class App:Application
         }
         DispatcherUnhandledException+=(_,error)=>{var folder=Environment.GetEnvironmentVariable("PIVOKI_SMOKE_DIRECTORY");if(folder is not null){Directory.CreateDirectory(folder);File.WriteAllText(Path.Combine(folder,"dispatcher-error.txt"),error.Exception.ToString());error.Handled=true;Shutdown(1);}};
         base.OnStartup(e);
+        if(e.Args.Contains("--verify-package-window"))
+        {
+            IsSmokeTest=true;
+            ShutdownMode=ShutdownMode.OnExplicitShutdown;
+            Dispatcher.BeginInvoke(async ()=>
+            {
+                try{await PackageWindowChecks.RunAsync();Shutdown(0);}
+                catch(Exception error)
+                {
+                    Console.Error.WriteLine(error);
+                    if(Environment.GetEnvironmentVariable("PIVOKI_SMOKE_DIRECTORY") is {} folder)
+                        File.WriteAllText(Path.Combine(folder,"package-window-error.txt"),error.ToString());
+                    Shutdown(1);
+                }
+            });
+            return;
+        }
         if(e.Args.Contains("--smoke-test-interactions"))
         {
             IsSmokeTest=true;ShutdownMode=ShutdownMode.OnExplicitShutdown;

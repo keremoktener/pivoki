@@ -15,6 +15,12 @@ var root = Path.Combine(Path.GetTempPath(), "Pivoki-Verify-" + Guid.NewGuid().To
 Directory.CreateDirectory(root);
 try
 {
+    if(!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("PIVOKI_ENGINE")))
+    {
+        var bridgeRoot=Directory.CreateDirectory(Path.Combine(root,"bridge")).FullName;
+        try{await PackageBridgeChecks.Run(bridgeRoot,Check);}
+        finally{Directory.Delete(bridgeRoot,true);}
+    }
     var languageRoot=Path.Combine(root,"Language checks");Directory.CreateDirectory(languageRoot);
     try{LocalizationChecks.Run(Check,languageRoot);}finally{Directory.Delete(languageRoot,true);}
     await DownloadChecks.Run(Check,root);

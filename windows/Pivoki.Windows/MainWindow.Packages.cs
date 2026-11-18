@@ -7,6 +7,7 @@ namespace Pivoki.Windows;
 public sealed partial class MainWindow
 {
     private OutputPackage[] cachedPackages=[];
+    private HashSet<string> packageExtensions=new(StringComparer.OrdinalIgnoreCase);
     private readonly StackPanel packageHistory=new();
     private int historyVersion;
 
@@ -20,13 +21,20 @@ public sealed partial class MainWindow
 
     private async Task RefreshPackageCacheAsync()
     {
-        try{cachedPackages=(await PackageEngine.RequestAsync(new{action="packages"})).Packages;}
+        try
+        {
+            var catalogTask=PackageEngine.RequestAsync(new{action="catalog"});
+            var packagesTask=PackageEngine.RequestAsync(new{action="packages"});
+            await Task.WhenAll(catalogTask,packagesTask);
+            packageExtensions=catalogTask.Result.Inputs.ToHashSet(StringComparer.OrdinalIgnoreCase);
+            cachedPackages=packagesTask.Result.Packages;
+        }
         catch(Exception){cachedPackages=[];}
     }
 
     private void ShowStudio()
     {
-        try{PackageEngine.OpenStudio();}
+        try{PackageEngine.OpenStudio(files);}
         catch(Exception error){MessageBox.Show(this,error.Message,"Pivoki Studio");}
     }
 
@@ -38,8 +46,8 @@ public sealed partial class MainWindow
         if(LibraryVisible)_=RefreshPackageHistoryAsync();
     }
 
-    private static bool AcceptsImagePackage(IReadOnlyList<string> sources) => sources.Count>0 &&
-        sources.All(path=>Directory.Exists(path) || FeatureCatalog.Extension(path) is "jpg" or "png" or "webp" or "bmp" or "tiff");
+    private bool AcceptsImagePackage(IReadOnlyList<string> sources) => sources.Count>0 &&
+        sources.All(path=>Directory.Exists(path) || packageExtensions.Contains(Path.GetExtension(path)));
 
     private IReadOnlyList<ToolChoice> PersonalWheel(string mode,IReadOnlyList<ToolChoice> standard,IReadOnlyList<string> sources)
     {
@@ -93,6 +101,12 @@ public sealed partial class MainWindow
             }
         }
         catch(Exception error){if(version==historyVersion){packageHistory.Children.Clear();packageHistory.Children.Add(Text(error.Message,12,"Muted",false));}}
+    }
+
+    private void ChangeFileHistory(Action change)
+    {
+        try{change();selectedLibraryId=null;RenderLibrary();}
+        catch(Exception error)when(error is IOException or UnauthorizedAccessException){MessageBox.Show(this,error.Message,"Pivoki");}
     }
 
     private async Task ChangeHistoryAsync(object request)

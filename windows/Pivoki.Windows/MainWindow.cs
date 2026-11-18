@@ -171,6 +171,7 @@ public sealed partial class MainWindow:Window
             var selected=list.SelectedItems.Cast<string>().ToArray();if(selected.Length==0)return false;
             foreach(var path in selected)files.Remove(path);Refresh();return true;
         }
+        if(LibraryVisible&&packageHistory.IsKeyboardFocusWithin)return false;
         if(LibraryVisible&&modifiers==ModifierKeys.None&&key is Key.Up or Key.Down){SelectLibrary(key==Key.Down?1:-1);return true;}
         if(LibraryVisible&&modifiers==ModifierKeys.None&&key==Key.Space&&focus is not System.Windows.Controls.Button){PreviewSelectedLibrary();return true;}
         if(LibraryVisible&&modifiers==ModifierKeys.None&&key==Key.Enter&&focus is not System.Windows.Controls.Button){ReuseSelectedLibrary();return true;}
@@ -184,6 +185,10 @@ public sealed partial class MainWindow:Window
     {
         libraryCards.Clear();libraryRows.Children.Clear();recentRows.Children.Clear();var filtered=SearchLibrary(search.Text).ToArray();
         if(filtered.Length==0)libraryRows.Children.Add(Card(Text(library.Entries.Count==0?"Nothing here yet. Paste something or make your first fresh copy.":"No matches. Try a file name or tool.",14,"Muted")));
+        if(library.Entries.Count>0)libraryRows.Children.Add(Button("Clear file history",()=>{
+            if(MessageBox.Show(this,$"{L10n.Text("Remove history records? Files stay in their folders.")} ({library.Entries.Count})","Pivoki",MessageBoxButton.OKCancel,MessageBoxImage.Question,MessageBoxResult.Cancel)==MessageBoxResult.OK)
+                ChangeFileHistory(library.ClearRecords);
+        }));
         foreach(var entry in filtered)libraryRows.Children.Add(LibraryRow(entry));
         recentCount.Text=library.Entries.Count.ToString();foreach(var entry in SearchLibrary(recentSearch.Text).Take(3))recentRows.Children.Add(LibraryRow(entry,true));
         if(library.Entries.Count==0)recentRows.Children.Add(Card(Text("Your next fresh copy will land here.",13,"Muted")));
@@ -195,7 +200,15 @@ public sealed partial class MainWindow:Window
         var reveal=Button("▱",()=>{var existing=entry.AvailablePaths;if(existing.Length>0)Reveal(existing[0]);else{L10n.SetText(status,"This file has moved or was deleted.");RenderLibrary();}});reveal.IsEnabled=available.Length>0;L10n.Bind(reveal,System.Windows.FrameworkElement.ToolTipProperty,"Show in Explorer");AutomationProperties.SetName(reveal,"Show "+entry.Name+" in Explorer");buttons.Children.Add(reveal);
         var fileIcon=new Image{Width=29,Height=29,Margin=new(0,0,12,0),VerticalAlignment=VerticalAlignment.Center};FileArtwork.Bind(fileIcon,entry.Paths[0]);DockPanel.SetDock(fileIcon,Dock.Left);row.Children.Add(fileIcon);var text=new StackPanel{Margin=new(0,0,12,0),VerticalAlignment=VerticalAlignment.Center};var name=Text(entry.Name,12,localize:false);name.TextWrapping=TextWrapping.NoWrap;name.TextTrimming=TextTrimming.CharacterEllipsis;name.ToolTip=string.Join(Environment.NewLine,entry.Paths);text.Children.Add(name);var info=new StackPanel{Orientation=Orientation.Horizontal};info.Children.Add(Text(entry.Action,10,"Muted"));info.Children.Add(Text("  ·  "+entry.Created.ToLocalTime().ToString("g"),10,"Muted",localize:false));if(available.Length<entry.Paths.Length){info.Children.Add(Text("  ·  ",10,"Muted",localize:false));info.Children.Add(Text("Files missing",10,"Muted"));}text.Children.Add(info);row.Children.Add(text);
         var preview=Button("◉",()=>PreviewEntry(entry));preview.IsEnabled=available.Length>0;L10n.Bind(preview,System.Windows.FrameworkElement.ToolTipProperty,"Preview");AutomationProperties.SetName(preview,"Preview "+entry.Name);buttons.Children.Insert(0,preview);
-        var card=Card(row);if(!compact)ConfigureLibraryRow(card,entry);card.Padding=new(14,10,14,10);if(compact){card.CornerRadius=new(12);card.BorderThickness=new(0);card.Margin=new(0,0,0,2);}return card;
+        var card=Card(row);
+        if(!compact)
+        {
+            ConfigureLibraryRow(card,entry);
+            var menu=new ContextMenu();
+            var remove=new MenuItem{Header=L10n.Text("Remove from history")};
+            remove.Click+=(_,_)=>ChangeFileHistory(()=>library.RemoveRecord(entry.Id));
+            menu.Items.Add(remove);card.ContextMenu=menu;
+        }card.Padding=new(14,10,14,10);if(compact){card.CornerRadius=new(12);card.BorderThickness=new(0);card.Margin=new(0,0,0,2);}return card;
     }
     private void OpenDownload()
     {

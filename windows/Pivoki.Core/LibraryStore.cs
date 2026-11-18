@@ -45,6 +45,8 @@ public sealed class LibraryStore
         if(existing.Length==0)return;
         Save(state with{Entries=new[]{new LibraryEntry(Guid.NewGuid(),DateTimeOffset.Now,action,existing)}.Concat(state.Entries).Take(Limit).ToList()});
     }
+    public void RemoveRecord(Guid id)=>Save(state with{Entries=state.Entries.Where(entry=>entry.Id!=id).ToList()});
+    public void ClearRecords()=>Save(state with{Entries=[]});
     public void SetAppearance(string appearance)=>Save(state with{Appearance=ValidAppearance(appearance)});
     public void SetWindowManagement(bool enabled)=>Save(state with{WindowManagementEnabled=enabled});
     // Actions match in English and the app language; file names match the way macOS finds them,

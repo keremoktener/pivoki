@@ -26,6 +26,7 @@ internal sealed class PackagesWindow : Window
     private OutputPackage[] packages = [];
     private string? planId, resultDirectory, cancelFile;
     private bool working;
+    private PackagePlanRow[] approvedRows=[];
     private OutputPackage? Selected => packageChoice.SelectedIndex is var i && i>=0 && i<packages.Length ? packages[i] : null;
 
     internal PackagesWindow(Window owner, PreferencesStore preferences, IEnumerable<string> sources, string? initialId, int? initialRevision, Action<OutputPackage[]> changed)
@@ -80,9 +81,16 @@ internal sealed class PackagesWindow : Window
         AddButtons(body,preview,run,cancel,reveal);
         AutomationProperties.SetLiveSetting(status,AutomationLiveSetting.Polite);
         body.Children.Add(status);
-        foreach(var (name,property,weight) in new[]{("Source","Source",1.15),("Final path","Target",1.65),("State","Status",.55),("Reason","Reason",.85)})
+        foreach(var (name,property,weight) in new[]{("Source","Source",1.05),("Original target","OriginalTarget",1.2),("Final path","Target",1.35),("State","Status",.55),("Reason","Reason",.85)})
             table.Columns.Add(new DataGridTextColumn{Header=L10n.Text(name),Binding=new Binding(property),Width=new DataGridLength(weight,DataGridLengthUnitType.Star)});
         AutomationProperties.SetName(table,L10n.Text("Output plan"));
+        AutomationProperties.SetAutomationId(packageChoice,"PackagePicker");
+        AutomationProperties.SetAutomationId(outputRoot,"PackageOutputRoot");
+        AutomationProperties.SetAutomationId(preview,"PreviewPackagePlan");
+        AutomationProperties.SetAutomationId(run,"RunApprovedPackage");
+        AutomationProperties.SetAutomationId(pin,"PinPackage");
+        AutomationProperties.SetAutomationId(reveal,"RevealPackageResult");
+        AutomationProperties.SetAutomationId(table,"PackagePlanRows");
         body.Children.Add(table);
         body.Children.Add(new Expander{Header=L10n.Text("Skipped inputs and reasons"),Content=excluded});
         AutomationProperties.SetName(excluded,L10n.Text("Skipped inputs and reasons"));
@@ -127,7 +135,7 @@ internal sealed class PackagesWindow : Window
     }
     private void InvalidatePlan()
     {
-        planId=resultDirectory=null;
+        planId=resultDirectory=null;approvedRows=[];
         table.ItemsSource=null; excluded.ItemsSource=null;
         status.Text="";
         UpdateButtons();
@@ -187,7 +195,7 @@ internal sealed class PackagesWindow : Window
         }catch(Exception error){status.Text=error.Message;}
         finally{working=false;UpdateButtons();}
     }
-    private async Task PlanAsync()
+    private async Task PlanAsync(PackagePlanRow[]? previous=null)
     {
         if(Selected is not {} package)return;
         InvalidatePlan();
@@ -197,15 +205,26 @@ internal sealed class PackagesWindow : Window
             var plan=await PackageEngine.RequestAsync(new{action="plan",packageId=package.PackageId,revision=package.Revision,
                 inputs=inputs.ToArray(),outputRoot=outputRoot.Text,recursive=recursive.IsEnabled && recursive.IsChecked==true,
                 conflictPolicy=conflicts.SelectedIndex==1?"skip":"keep-both"});
-            table.ItemsSource=plan.Rows;
-            excluded.ItemsSource=plan.Skipped.Select(item=>$"{item.Source} — {item.Reason}").ToArray();
+            approvedRows=plan.Rows;
+            var previousTargets=previous?.Select(r=>(r.Source,r.Target,r.Status)).ToHashSet();
+            bool Changed(PackagePlanRow row)=>previousTargets is not null && !previousTargets.Contains((row.Source,row.Target,row.Status));
+            table.ItemsSource=plan.Rows.Select(r=>new {r.Source,r.OriginalTarget,r.Target,Status=L10n.Text(r.Status=="planned"?"Planned":"Skipped"),
+                Reason=(Changed(r)?L10n.Text("Changed")+" · ":"")+Reason(r.Reason)}).ToArray();
+            excluded.ItemsSource=plan.Skipped.Select(item=>$"{item.Source} — {Reason(item.Reason)}").ToArray();
             var planned=plan.Rows.Where(row=>row.Status=="planned").ToArray();
             if(planned.Length>0)planId=plan.PlanId;
-            status.Text=$"{L10n.Text("Eligible inputs")} {planned.Select(row=>row.Source).Distinct(StringComparer.OrdinalIgnoreCase).Count()} · " +
-                $"{L10n.Text("Outputs")} {planned.Length} · {L10n.Text("Skipped")} {plan.Skipped.Length+plan.Rows.Length-planned.Length}";
+            status.Text=$"{L10n.Text("Eligible inputs")} {plan.InputCount} · " +
+                $"{L10n.Text("Outputs")} {planned.Length} · {L10n.Text("Name conflicts")} {plan.ConflictCount} · {L10n.Text("Skipped")} {plan.Skipped.Length+plan.Rows.Length-planned.Length}";
+            if(previous is not null)status.Text=L10n.Text("Targets changed. Review and approve the new plan.")+" "+status.Text;
         }catch(Exception error){status.Text=error.Message;}
         finally{working=false;UpdateButtons();}
     }
+    private static string Reason(string? reason) => L10n.Text(reason switch
+    {
+        "kept_both"=>"Keeping both copies", "name_conflict"=>"Name conflict", "unsupported_format"=>"Unsupported format",
+        "subfolder_excluded"=>"Subfolders excluded", "output_directory"=>"Output folder excluded", "symbolic_link"=>"Symbolic link",
+        "document_bundle"=>"Document bundle", "unreadable"=>"Cannot read this item", "invalid_image"=>"Invalid image", _=>reason??""
+    });
     private void CancelRun()
     {
         if(cancelFile is null)return;
@@ -228,6 +247,10 @@ internal sealed class PackagesWindow : Window
                 status.Text=$"{L10n.Text("Saved outputs")} {result.Paths.Length} · {resultDirectory}";
             }
             else status.Text=L10n.Text(result.Status=="cancelled"?"Run cancelled":"Outputs skipped");
+        }
+        catch(PackageRequestException error)when(error.Code=="replan_required")
+        {
+            await PlanAsync(approvedRows);
         }
         catch(Exception error){status.Text=error.Message+" "+L10n.Text("Preview a new plan to continue.");}
         finally

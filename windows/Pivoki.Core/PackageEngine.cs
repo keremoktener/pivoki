@@ -7,7 +7,7 @@ namespace Pivoki.Core;
 
 public sealed record PackageOutput(string Format, int MaxEdge, string RelativeDir);
 public sealed record OutputPackage(string PackageId, int Revision, string Name, PackageOutput[] Outputs);
-public sealed record PackagePlanRow(string Source, string Target, string Status, string? Reason);
+public sealed record PackagePlanRow(string Source, string Target, string Status, string? Reason,string? OriginalTarget);
 public sealed record SkippedInput(string Source, string Reason);
 public sealed record PackageJob(string JobId, string Name, string Directory, string[] Paths, string CreatedAt);
 public sealed record PackageReply
@@ -15,14 +15,22 @@ public sealed record PackageReply
     public required string Status { get; init; }
     public string? Error { get; init; }
     public string? Code { get; init; }
+    public string[] Inputs { get; init; } = [];
     public OutputPackage[] Packages { get; init; } = [];
     public OutputPackage? Package { get; init; }
     public string? PlanId { get; init; }
     public string? Directory { get; init; }
     public PackagePlanRow[] Rows { get; init; } = [];
     public SkippedInput[] Skipped { get; init; } = [];
+    public int InputCount { get; init; }
+    public int ConflictCount { get; init; }
     public string[] Paths { get; init; } = [];
     public PackageJob[] Jobs { get; init; } = [];
+}
+
+public sealed class PackageRequestException(string? code,string message):Exception(message)
+{
+    public string? Code { get; }=code;
 }
 
 public static class PackageEngine
@@ -52,7 +60,13 @@ public static class PackageEngine
         return Process.Start(start);
     }
 
-    public static void OpenStudio() => Process.Start(StartInfo("studio"))?.Dispose();
+    public static void OpenStudio(IEnumerable<string> inputs)
+    {
+        var start = StartInfo("studio");
+        start.ArgumentList.Add("--");
+        foreach(var input in inputs)start.ArgumentList.Add(input);
+        Process.Start(start)?.Dispose();
+    }
 
     public static async Task<PackageReply> RequestAsync(object request)
     {
@@ -72,7 +86,7 @@ public static class PackageEngine
             throw new IOException(diagnostic.Length == 0 ? $"The engine exited with code {process.ExitCode}." : diagnostic);
         var result = JsonSerializer.Deserialize<PackageReply>(content, Json) ?? throw new InvalidDataException("The engine returned an empty reply.");
         if (result.Status == "failed" || (process.ExitCode != 0 && result.Status is not ("cancelled" or "skipped")))
-            throw new InvalidOperationException(result.Error ?? $"The engine exited with code {process.ExitCode}.");
+            throw new PackageRequestException(result.Code,result.Error ?? $"The engine exited with code {process.ExitCode}.");
         return result;
     }
 }
