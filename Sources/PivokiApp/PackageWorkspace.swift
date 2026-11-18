@@ -33,9 +33,11 @@ import SwiftUI
         do {
             let reply = try await PackageRPC().send(["action": "packages"])
             guard reply.status == "success" else { throw PivokiError.failed(reply.error ?? reply.status) }
+            let previous = selected
             packages = reply.packages ?? []
             if let preferred, packages.contains(where: { $0.id == preferred }) { selectedID = preferred }
             else if selected == nil { selectedID = packages.first?.id ?? "" }
+            if let previous, previous != selected { invalidate() }
             state?.wheelPackages = packages
         } catch { message = error.localizedDescription }
     }
@@ -123,6 +125,7 @@ struct PackageView: View {
     @State private var draft = Self.freshPackage()
     @State private var deletePrompt = false
     @State private var showRows = true
+    @State private var showSettings = false
     private static func freshPackage() -> OutputPackage {
         OutputPackage(name: "", outputs: [.init(format: "webp", maxEdge: 1600, relativeDir: "web"), .init(format: "jpg", maxEdge: 400, relativeDir: "thumb")])
     }
@@ -138,7 +141,11 @@ struct PackageView: View {
             Divider()
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
-                    configuration.disabled(model.busy)
+                    if model.preview != nil || model.result != nil {
+                        DisclosureGroup(isExpanded: $showSettings) { configuration.disabled(model.busy) } label: {
+                            Text(verbatim: model.selected?.name ?? L10n.text("Package")).font(.headline)
+                        }
+                    } else { configuration.disabled(model.busy) }
                     if let preview = model.preview { previewCard(preview) }
                     if let result = model.result { resultCard(result) }
                     if !model.message.isEmpty { Label { LText(model.message).textSelection(.enabled) } icon: { Image(systemName: "info.circle") } }
@@ -165,6 +172,7 @@ struct PackageView: View {
         }
         .frame(minWidth: 680, minHeight: 510)
         .background(PivokiPalette.canvas)
+        .onChange(of: model.preview?.planId) { _ in showSettings = false }
         .sheet(isPresented: $model.editing) { PackageEditor(model: model, draft: draft) }
         .alert("Delete this package?", isPresented: $deletePrompt) {
             Button("Cancel", role: .cancel) {}
@@ -210,13 +218,16 @@ struct PackageView: View {
     private func previewCard(_ preview: PackageReply) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Output plan").font(.headline)
-            HStack { Text("\(model.readyRows) outputs"); Text("·"); Text("\((preview.skipped?.count ?? 0) + (preview.rows?.filter { $0.status == "skipped" }.count ?? 0)) skipped") }
+            HStack { Text("\(preview.inputCount ?? 0) sources"); Text("·"); Text("\(model.readyRows) outputs"); Text("·"); Text("\(preview.conflictCount ?? 0) name conflicts"); Text("·"); Text("\((preview.skipped?.count ?? 0) + (preview.rows?.filter { $0.status == "skipped" }.count ?? 0)) skipped") }
                 .foregroundStyle(.secondary)
             DisclosureGroup("Planned paths", isExpanded: $showRows) {
                 LazyVStack(alignment: .leading, spacing: 8) {
                     ForEach(Array((preview.rows ?? []).enumerated()), id: \.offset) { _, row in
                         VStack(alignment: .leading, spacing: 4) {
                             Text(verbatim: row.source).font(.caption).foregroundStyle(.secondary)
+                            if let original = row.originalTarget, original != row.target {
+                                Text(verbatim: original).strikethrough().font(.caption).foregroundStyle(.secondary)
+                            }
                             if let target = row.target { Label { Text(verbatim: target) } icon: { Image(systemName: "arrow.turn.down.right") } }
                             if let reason = row.reason, !reason.isEmpty { Text(verbatim: reason).font(.caption) }
                         }.textSelection(.enabled)

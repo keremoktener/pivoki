@@ -27,7 +27,7 @@ struct HomeView:View {
                 Text("Pivoki").font(.system(size:19,weight:.bold,design:.rounded)).tracking(-0.5)
                 Spacer()
                 if Bundle.main.object(forInfoDictionaryKey:"PivokiExternalTools") as? Bool == true {
-                    Button(toolsReady ? "Tools ready":"Finish setup") {NotificationCenter.default.post(name:.showToolSetup,object:nil)}
+                    Button(toolsReady ? "Tools ready":"Optional tools") {NotificationCenter.default.post(name:.showToolSetup,object:nil)}
                         .buttonStyle(PivokiButtonStyle(.secondary,compact:true))
                 }
                 Button("Home") {state.libraryVisible=false}.buttonStyle(PivokiButtonStyle(state.libraryVisible ? .quiet:.secondary,compact:true))
@@ -123,6 +123,7 @@ struct HomeView:View {
                     HStack(spacing:9) {
                         Button { state.onChooseFiles?() } label:{Label(state.inputs.isEmpty ? "Choose files":"Add or change files",systemImage:"plus")}
                             .buttonStyle(PivokiButtonStyle(state.inputs.isEmpty ? .primary:.secondary)).disabled(state.working)
+                        if state.inputs.isEmpty { Button("Use sample image") { state.useSample() }.buttonStyle(PivokiButtonStyle(.secondary, compact:true)).disabled(state.working) }
                         Button("Paste") {state.pasteContent()}.buttonStyle(PivokiButtonStyle(.secondary)).help("⌘V · Paste files, text, an image or link").disabled(state.working)
                         if !state.inputs.isEmpty {
                             Button { state.onOpenWheel?() } label:{Label("Open wheel",systemImage:"circle.hexagongrid")}
@@ -160,15 +161,14 @@ struct HomeView:View {
     }
     /// Copy goes through the catalog; file names and folders stay verbatim.
     @ViewBuilder private var selectionTitle:some View {
-        if targeted { LText("Drop it like it’s… a file.") }
-        else if state.inputs.isEmpty { LText("Drop something good.") }
+        if state.inputs.isEmpty || targeted { LText("Drag files or folders here") }
         else if state.inputs.count==1 { Text(verbatim:state.inputs[0].lastPathComponent) }
-        else { LText("\(state.inputs.count) files, ready to go.") }
+        else { LText("\(state.inputs.count) items selected") }
     }
     @ViewBuilder private var selectionDescription:some View {
-        if state.inputs.isEmpty { LText("Images, videos, documents, and all the little things in between.") }
+        if state.inputs.isEmpty { LText("Choose a source to see compatible conversions and tools.") }
         else if state.inputs.count==1 { Text(verbatim:state.inputs[0].deletingLastPathComponent().abbreviatingWithTildeInPath) }
-        else { LText("Keep them together, or give each one a fresh start.") }
+        else { LText("Apply one action to the selection or use an output package.") }
     }
     private func shortcut(_ key:String,_ title:String)->some View {
         HStack(spacing:5) { Text(ModifierChord.legacy(key)?.symbols ?? key).font(.system(size:12,weight:.semibold));LText(title).font(.system(size:10,weight:.medium)) }

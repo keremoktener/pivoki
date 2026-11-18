@@ -18,6 +18,7 @@ struct OutputPackage: Codable, Identifiable, Equatable {
 struct OutputRow: Decodable {
     let source: String
     let target: String?
+    let originalTarget: String?
     let status: String
     let reason: String?
 }
@@ -32,6 +33,8 @@ struct PackageReply: Decodable {
     let package: OutputPackage?
     let rows: [OutputRow]?
     let skipped: [Skipped]?
+    let inputCount: Int?
+    let conflictCount: Int?
     let planId: String?
     let jobId: String?
     let paths: [String]?
@@ -40,10 +43,14 @@ struct PackageReply: Decodable {
 }
 
 enum StudioLauncher {
-    @MainActor static func open() throws {
+    @MainActor static func open(inputs: [URL], onExit: @escaping @MainActor (Int32) -> Void) throws {
         let process = Process()
         process.executableURL = try PackageEngine.executable()
-        process.arguments = ["studio"]
+        process.arguments = ["studio"] + inputs.filter(\.isFileURL).map(\.path)
+        process.terminationHandler = { process in
+            guard process.terminationStatus != 0 else { return }
+            Task { @MainActor in onExit(process.terminationStatus) }
+        }
         try process.run()
     }
 }
@@ -85,7 +92,8 @@ final class PackageRPC: @unchecked Sendable {
         try stdin.fileHandleForWriting.close()
         let data = try stdout.fileHandleForReading.readToEnd() ?? Data()
         process.waitUntilExit()
-        if data.isEmpty && interrupted { throw CancellationError() }
+        lock.lock(); let cancelled = interrupted; lock.unlock()
+        if data.isEmpty && cancelled { throw CancellationError() }
         guard let reply = try? JSONDecoder().decode(PackageReply.self, from: data) else {
             throw PivokiError.failed("The package engine returned an unreadable result.")
         }

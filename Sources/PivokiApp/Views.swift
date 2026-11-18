@@ -86,7 +86,7 @@ struct SettingsView:View {
             PivokiPageHeading(eyebrow:"General",title:"Your kind of flow.",subtitle:"A few small preferences. A smoother everyday.").padding(.bottom,4)
             GroupBox {
                 VStack(spacing:16) {
-                    HStack { Text("Language");Spacer();Picker("Language",selection:$appLanguage) { Text(verbatim:"English").tag("en");Text(verbatim:"Türkçe").tag("tr");Text(verbatim:"Français").tag("fr") }.labelsHidden().frame(width:230).accessibilityIdentifier("AppLanguage") }
+                    HStack { Text("Language");Spacer();NativeLanguagePicker(language:$appLanguage).frame(width:230,height:26) }
                     HStack { Text("Appearance");Spacer();Picker("Appearance",selection:$appAppearance) { Text("System").tag("system");Text("Light").tag("light");Text("Dark").tag("dark") }.labelsHidden().pickerStyle(.segmented).frame(width:230) }
                     HStack { Text("Wheel finish");Spacer();Picker("Wheel finish",selection:$fanTheme) { Text("Glass").tag("glass");Text("Solid").tag("metallic") }.labelsHidden().pickerStyle(.segmented).frame(width:230) }
                     Divider()
@@ -304,11 +304,41 @@ private struct AboutSettingsView:View {
             Spacer()
             PivokiMark(size:96,happy:true)
             Text("Pivoki").font(.system(size:32,weight:.bold,design:.rounded))
-            Text("Your files, a little sweeter.").font(.headline)
+            Text("Personal, non-commercial use.").font(.headline)
             Text("Version \(version)").foregroundStyle(.secondary)
-            Text("A little less file fuss. A little more flow.\nConvert, edit, and organize — right on your Mac.").multilineTextAlignment(.center).foregroundStyle(.secondary)
-            Text("Built for your files. Made for your Mac.").font(.caption).foregroundStyle(.secondary)
+            HStack {
+                if let license=Bundle.main.url(forResource:"Pivoki-LICENSE",withExtension:"txt") { Button("View license") { NSWorkspace.shared.open(license) } }
+                if let notices=Bundle.main.url(forResource:"THIRD-PARTY-NOTICES",withExtension:"txt") { Button("Third-party notices") { NSWorkspace.shared.open(notices) } }
+            }
             Spacer()
         }.padding(30).frame(maxWidth:.infinity)
+    }
+}
+
+/// Keep a named AppKit control in the accessibility tree across SwiftUI/macOS versions.
+private struct NativeLanguagePicker: NSViewRepresentable {
+    @Binding var language: String
+    final class Coordinator: NSObject {
+        var binding: Binding<String>
+        init(_ binding: Binding<String>) { self.binding = binding }
+        @objc func changed(_ sender: NSPopUpButton) {
+            if let id = sender.selectedItem?.representedObject as? String { binding.wrappedValue = id }
+        }
+    }
+    func makeCoordinator() -> Coordinator { Coordinator($language) }
+    func makeNSView(context: Context) -> NSPopUpButton {
+        let popup = NSPopUpButton(frame:.zero, pullsDown:false)
+        for (code,title) in [("en","English"),("tr","Türkçe"),("fr","Français")] {
+            popup.addItem(withTitle:title); popup.lastItem?.representedObject = code
+        }
+        popup.target = context.coordinator
+        popup.action = #selector(Coordinator.changed(_:))
+        popup.setAccessibilityIdentifier("AppLanguage")
+        return popup
+    }
+    func updateNSView(_ popup: NSPopUpButton, context: Context) {
+        context.coordinator.binding = $language
+        popup.setAccessibilityLabel(L10n.text("Language"))
+        popup.selectItem(at: popup.indexOfItem(withRepresentedObject: language))
     }
 }

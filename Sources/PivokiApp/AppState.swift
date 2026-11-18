@@ -68,6 +68,16 @@ struct JobRecord:Codable,Identifiable {
         // Decode records one by one so a single unreadable entry cannot erase the whole Library.
         if let data=historyDefaults.data(forKey:"history"),let items=try? JSONDecoder().decode([StoredJobRecord].self,from:data) { history=items.compactMap(\.record) }
     }
+    func useSample() {
+        guard let source = Bundle.main.url(forResource: "Pivoki", withExtension: "png") else { return }
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("Pivoki-Sample-" + UUID().uuidString, isDirectory:true)
+        do {
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: false)
+            let copy = dir.appendingPathComponent("Pivoki.png")
+            try FileManager.default.copyItem(at: source, to: copy)
+            inputs = [copy]
+        } catch { self.error = error.localizedDescription }
+    }
     func refreshPackageHistory() async {
         do {
             let reply = try await PackageRPC().send(["action": "history"])

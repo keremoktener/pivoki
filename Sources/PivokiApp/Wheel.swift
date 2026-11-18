@@ -52,7 +52,7 @@ struct WheelItem {
         }
             let prefs = WheelPreferences.shared
             items = items.filter { $0.preferenceKey.map(prefs.visible) ?? true }
-            if mode == .convert, inputs.contains(where: { ["jpg","jpeg","png","webp","tiff","tif","bmp","gif"].contains($0.pathExtension.lowercased()) || (try? $0.resourceValues(forKeys:[.isDirectoryKey]).isDirectory) == true }) {
+            if mode == .convert, inputs.contains(where: { ["jpg","jpeg","png","webp","tiff","tif","bmp","gif","heic","heif","avif"].contains($0.pathExtension.lowercased()) || (try? $0.resourceValues(forKeys:[.isDirectoryKey]).isDirectory) == true }) {
                 for package in state.wheelPackages where prefs.pins.contains(package.id) {
                     items.append(WheelItem(title: package.name, symbol: "square.3.layers.3d", packageID: package.id))
                 }
