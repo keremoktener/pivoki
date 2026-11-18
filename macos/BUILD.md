@@ -1,6 +1,6 @@
 # Build Pivoki on macOS
 
-Install Xcode with Swift 6 and a Python 3.11 or 3.12 distribution that includes Tk. From the repository root, run the following command.
+The complete app with RAW support requires macOS 14 or later. Install Xcode with Swift 6 and a Python 3.11 or 3.12 distribution that includes Tk. From the repository root, run the following command.
 
 ```sh
 ./macos/build-from-source.sh
