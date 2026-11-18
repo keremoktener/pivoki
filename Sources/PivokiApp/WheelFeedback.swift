@@ -43,7 +43,7 @@ import Foundation
         self.clock = clock
         self.injectedSound = playSound
         self.performHaptic = performHaptic ?? {
-            NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .now)
+            NSHapticFeedbackManager.defaultPerformer.perform(.levelChange, performanceTime: .now)
         }
         var pool: [AVAudioPlayer] = []
         var preparation: [Bool] = []
