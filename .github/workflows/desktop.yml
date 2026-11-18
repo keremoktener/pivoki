@@ -1,0 +1,41 @@
+name: Desktop checks
+on:
+  push:
+    paths-ignore: ['**.md', 'LICENSE']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: desktop-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  package-engine:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15, windows-2025, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install "./engine[heif,test]" ./studio
+      - run: python -m pytest -q engine/tests studio/tests
+      - if: runner.os == 'Windows'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - if: runner.os == 'Windows'
+        name: Verify the native Windows core and the shared RPC bridge
+        shell: pwsh
+        run: |
+          $env:PIVOKI_ENGINE = (Get-Command pivoki-engine.exe).Source
+          dotnet run --project windows/Pivoki.Verify/Pivoki.Verify.csproj -c Release
+      - if: runner.os == 'Windows'
+        name: Build the native Windows desktop
+        run: dotnet build windows/Pivoki.Windows/Pivoki.Windows.csproj -c Release
+      - if: runner.os == 'macOS'
+        name: Build the native Swift desktop and CLI
+        run: swift build -j 4
