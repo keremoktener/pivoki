@@ -52,6 +52,11 @@
           "Microsoft.Extensions.Logging.Abstractions": "8.0.3"
         }
       },
+      "ResvgSharp": {
+        "type": "Transitive",
+        "resolved": "1.0.3",
+        "contentHash": "/U2G6sPmb+yWOGm8omtTG7BxlTbGkc/PZKPJPV4VzRNBhIXyo2OFvkKmGyhQ4EBTr/hjihMVcV9jLLWo4H/hdw=="
+      },
       "SharpCompress": {
         "type": "Transitive",
         "resolved": "0.50.5",
@@ -74,6 +79,7 @@
           "Magick.NET-Q8-AnyCPU": "[15.0.0, )",
           "PDFsharp": "[6.2.4, )",
           "PdfPig": "[0.1.16, )",
+          "ResvgSharp": "[1.0.3, )",
           "SharpCompress": "[0.50.5, )",
           "System.Security.Cryptography.Pkcs": "[10.0.13, )",
           "ZXing.Net": "[0.16.11, )"
@@ -94,6 +100,11 @@
         "dependencies": {
           "Magick.NET.Core": "15.0.0"
         }
+      },
+      "ResvgSharp": {
+        "type": "Transitive",
+        "resolved": "1.0.3",
+        "contentHash": "/U2G6sPmb+yWOGm8omtTG7BxlTbGkc/PZKPJPV4VzRNBhIXyo2OFvkKmGyhQ4EBTr/hjihMVcV9jLLWo4H/hdw=="
       },
       "System.Security.Cryptography.Pkcs": {
         "type": "Transitive",

@@ -19,21 +19,23 @@ public static class PhotoCodec
     static PhotoCodec()
     {
         var config=ConfigurationFiles.Default;
-        config.Policy.Data="<policymap><policy domain='delegate' rights='none' pattern='*'/><policy domain='coder' rights='none' pattern='{HTTPS,HTTP,URL,FTP,MSL,EPHEMERAL,PS,PS2,PS3,EPS,PDF,XPS}'/><policy domain='path' rights='none' pattern='@*'/></policymap>";
+        config.Policy.Data="<policymap><policy domain='delegate' rights='none' pattern='*'/><policy domain='coder' rights='none' pattern='{HTTPS,HTTP,URL,FTP,MSL,MVG,EPHEMERAL,PS,PS2,PS3,EPS,PDF,XPS}'/><policy domain='path' rights='none' pattern='@*'/></policymap>";
         MagickNET.Initialize(config);ResourceLimits.Memory=512UL*1024*1024;ResourceLimits.Disk=0;ResourceLimits.Width=30000;ResourceLimits.Height=30000;ResourceLimits.ListLength=500;ResourceLimits.Thread=2;
     }
     public static MagickImage Read(string path)
     {
         if(!FeatureCatalog.IsImage(path)&&FeatureCatalog.Extension(path)!="gif")throw new ArgumentException("Choose an image.");
         if(new FileInfo(path).Length>200_000_000)throw new InvalidDataException("This image exceeds 200 MB.");
-        if(FeatureCatalog.Extension(path)=="svg")ValidateSvg(path);
-        var ext=FeatureCatalog.Extension(path);var settings=new MagickReadSettings{FrameCount=1,Format=ext=="svg"?MagickFormat.Msvg:Format(ext)};
+        var ext=FeatureCatalog.Extension(path);
+        if(ext=="svg")return ReadSvg(path);
+        var settings=new MagickReadSettings{FrameCount=1,Format=Format(ext)};
         using var stream=File.OpenRead(path);var info=new MagickImageInfo(stream,settings);if((ulong)info.Width*info.Height>100_000_000)throw new InvalidDataException("This image exceeds 100 MP.");stream.Position=0;
         var image=new MagickImage(stream,settings);image.AutoOrient();if(image.GetColorProfile() is not null)image.TransformColorSpace(ColorProfiles.SRGB);else image.ColorSpace=ColorSpace.sRGB;return image;
     }
-    private static void ValidateSvg(string path)
+    private static MagickImage ReadSvg(string path)
     {
-        using var reader=XmlReader.Create(path,new XmlReaderSettings{DtdProcessing=DtdProcessing.Prohibit,XmlResolver=null,MaxCharactersInDocument=20_000_000});var xml=XDocument.Load(reader);
+        using var input=File.OpenRead(path);
+        using var reader=XmlReader.Create(input,new XmlReaderSettings{DtdProcessing=DtdProcessing.Prohibit,XmlResolver=null,MaxCharactersInDocument=20_000_000});var xml=XDocument.Load(reader);
         foreach(var element in xml.Descendants())
         {
             if(element.Name.LocalName is "script" or "foreignObject")throw new InvalidDataException("Use a static SVG without embedded scripts or HTML.");
@@ -41,6 +43,15 @@ public static class PhotoCodec
             if(element.Value.Contains("url(",StringComparison.OrdinalIgnoreCase)&&!element.Value.Contains("url(#",StringComparison.OrdinalIgnoreCase))throw new InvalidDataException("SVG external styles are not loaded.");
             foreach(var attribute in element.Attributes())if(attribute.Value.Contains("url(",StringComparison.OrdinalIgnoreCase)&&!attribute.Value.Contains("url(#",StringComparison.OrdinalIgnoreCase))throw new InvalidDataException("SVG external styles are not loaded.");
         }
+        // Ping only the validated SVG header to retain the existing canvas and pixel limits.
+        // Rasterize the same parsed document in resvg, independently of ImageMagick's MVG coder.
+        var document=xml.ToString(SaveOptions.DisableFormatting);
+        var encoded=System.Text.Encoding.UTF8.GetBytes(document);
+        var info=new MagickImageInfo(encoded,new MagickReadSettings{Format=MagickFormat.Msvg});
+        if(info.Width==0 || info.Height==0 || info.Width>30000 || info.Height>30000 || (ulong)info.Width*info.Height>100_000_000)
+            throw new InvalidDataException("This image exceeds 100 MP or has an invalid canvas.");
+        var png=ResvgSharp.Resvg.RenderToPng(document,new ResvgSharp.ResvgOptions{Width=(int)info.Width,Height=(int)info.Height});
+        return new MagickImage(png,MagickFormat.Png);
     }
     public static byte[] Png(string input){using var image=Read(input);return image.ToByteArray(MagickFormat.Png);}
     public static void EncodePng(byte[] pixels,string output,string format,int quality=85,string? encoder=null,CancellationToken token=default)

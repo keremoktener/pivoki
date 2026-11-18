@@ -33,6 +33,12 @@
           "System.Security.Cryptography.Pkcs": "8.0.1"
         }
       },
+      "ResvgSharp": {
+        "type": "Direct",
+        "requested": "[1.0.3, )",
+        "resolved": "1.0.3",
+        "contentHash": "/U2G6sPmb+yWOGm8omtTG7BxlTbGkc/PZKPJPV4VzRNBhIXyo2OFvkKmGyhQ4EBTr/hjihMVcV9jLLWo4H/hdw=="
+      },
       "SharpCompress": {
         "type": "Direct",
         "requested": "[0.50.5, )",
