@@ -213,6 +213,9 @@ class Studio(tk.Tk):
                 ttk.Button(self.options,text=label,command=lambda a=act:self.edit_point(a)).pack(side="top",anchor="w")
             ttk.Button(self.options,text="Şekli kapat",command=self.close_polygon).pack(anchor="w")
         elif op==PHOTO[5]:
+            enabled = tk.BooleanVar(value=False)
+            ttk.Checkbutton(self.options, text="Yeni kopyada EXIF tarihiyle eşitle", variable=enabled).pack(anchor="w")
+            self.fields["sync"] = enabled.get
             self.field("offset","EXIF saat dilimi eksikse (±SS:DD)","")
         if op in (PDF[0],PDF[3]):
             self.field("pages","Sayfalar (tümü veya 1,3-5)","")
@@ -319,6 +322,8 @@ class Studio(tk.Tk):
             try:
                 done(future.result())
             except Exception as exc:
+                self.picture=None
+                self.render_canvas()
                 self.status.set(str(exc))
         self.after(20,poll)
 
@@ -361,7 +366,10 @@ class Studio(tk.Tk):
             if op==VIDEO[2]:
                 frame=temp/"frame.png"
                 media.invoke([tool("ffmpeg"),"-v","error","-y","-ss",v["start"],"-i",str(paths[0]),"-frames:v","1",str(frame)])
-                return images.source_image(frame)
+                image = images.source_image(frame)
+                if closed:
+                    image = Image.alpha_composite(image,media.mask_layer(image.size,points,float(v["angle"])))
+                return image
             video,a,duration=media.inspect(paths[0])
             return f"{duration:.1f} sn · {video['width']} × {video['height']} · {video['codec_name']} · {a['codec_name'] if a else 'Sessiz'}"
         def ready(result):
@@ -430,6 +438,12 @@ class Studio(tk.Tk):
             return Image.alpha_composite(img,images.watermark_overlay(img.size,**Studio.mark_args(v)))
         if op==PHOTO[2]:
             return images.remove_background(img,int(v["tol"]),float(v["feather"]))
+        if op==PHOTO[4] and preview:
+            board=Image.new("RGBA",(335,288),"#e9eee5")
+            for size,left in [(16,18),(256,60)]:
+                icon=ImageOps.contain(img,(size,size),Image.Resampling.LANCZOS)
+                board.alpha_composite(icon,(left+(size-icon.width)//2,(288-icon.height)//2))
+            return board
         if op==PHOTO[3]:
             if preview and not closed:
                 return img
@@ -455,6 +469,10 @@ class Studio(tk.Tk):
                 if info["signatureParts"]:
                     notes.append("Çıktı bir çalışma kopyasıdır. İmza özgün UDF içinde kalır.")
                 if notes and not messagebox.askokcancel("Dışa aktarma", "\n".join(notes),parent=self):
+                    return
+            if op==PHOTO[5] and v["sync"]:
+                stamp=images.exif_time(paths[0],v["offset"])
+                if not messagebox.askokcancel("Dosya tarihini eşitle",f"Yeni kopyanın değiştirilme tarihi: {stamp.isoformat()}",parent=self):
                     return
             signed_ok=False
             if op in PDF and op!=PDF[2]:
@@ -490,7 +508,8 @@ class Studio(tk.Tk):
             def export():
                 with new_file(target) as work:
                     if op==PHOTO[5]:
-                        stamp=images.exif_time(paths[0],v["offset"]).timestamp()
+                        stamp=(images.exif_time(paths[0],v["offset"]).timestamp()
+                               if v["sync"] else paths[0].stat().st_mtime)
                         shutil.copyfile(paths[0],work)
                         os.utime(work,(stamp,stamp))
                         if abs(work.stat().st_mtime-stamp)>2:

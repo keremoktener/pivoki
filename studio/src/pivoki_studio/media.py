@@ -28,6 +28,22 @@ def inspect(path):
     return video, audio, float(info["format"].get("duration",0))
 
 
+def mask_layer(size, points, angle):
+    width, height = size
+    if not points or len(set(points)) < 3 or any(not 0<=n<=1 for point in points for n in point):
+        raise ValueError("Maske için 0–1 aralığında en az üç farklı nokta girin.")
+    vertices = [(x*width,y*height) for x,y in points]
+    if angle:
+        cx=sum(x for x,y in vertices)/len(vertices)
+        cy=sum(y for x,y in vertices)/len(vertices)
+        r=math.radians(angle)
+        vertices=[(cx+(x-cx)*math.cos(r)-(y-cy)*math.sin(r),
+                   cy+(x-cx)*math.sin(r)+(y-cy)*math.cos(r)) for x,y in vertices]
+    mask = Image.new("RGBA",size)
+    ImageDraw.Draw(mask).polygon(vertices,fill="black")
+    return mask
+
+
 def encode(source, target, *, mode, mb=10, start=0, end=None, points=None, angle=0):
     v,a,duration = inspect(source)
     if duration <= 0:
@@ -59,19 +75,9 @@ def encode(source, target, *, mode, mb=10, start=0, end=None, points=None, angle
         width,height = v["width"], v["height"]
         if any(abs(int(s.get("rotation",0))) % 180 == 90 for s in v.get("side_data_list",[])):
             width,height = height,width
-        if not points or len(set(points)) < 3 or any(not 0<=n<=1 for point in points for n in point):
-            raise ValueError("Maske için 0–1 aralığında en az üç farklı nokta girin.")
-        vertices = [(x*width,y*height) for x,y in points]
-        if angle:
-            cx=sum(x for x,y in vertices)/len(vertices)
-            cy=sum(y for x,y in vertices)/len(vertices)
-            r=math.radians(angle)
-            vertices=[(cx+(x-cx)*math.cos(r)-(y-cy)*math.sin(r),
-                       cy+(x-cx)*math.sin(r)+(y-cy)*math.cos(r)) for x,y in vertices]
         with tempfile.TemporaryDirectory() as temp:
             overlay = Path(temp,"mask.png")
-            mask = Image.new("RGBA",(width,height))
-            ImageDraw.Draw(mask).polygon(vertices,fill="black")
+            mask = mask_layer((width,height), points, angle)
             mask.save(overlay)
             args += ["-i",str(overlay),"-filter_complex",
                      f"[0:{v['index']}][1:v]overlay=enable='gte(t,{start})*lt(t,{end})'[masked]",
