@@ -28,6 +28,12 @@ internal static class DesktopGeometry
         var dpi=96u;try{if(GetDpiForMonitor(monitor,0,out var actual,out _)==0)dpi=actual;}catch(DllNotFoundException){}
         var scale=dpi/96d;return new(info.Work.Left/scale,info.Work.Top/scale,(info.Work.Right-info.Work.Left)/scale,(info.Work.Bottom-info.Work.Top)/scale);
     }
+    internal static bool CoversMonitor(IntPtr handle)
+    {
+        var info=new MonitorInfo{Size=Marshal.SizeOf<MonitorInfo>()};
+        return GetMonitorInfo(MonitorFromWindow(handle,2),ref info) && GetWindowRect(handle,out var r) &&
+            r.Left<=info.Monitor.Left && r.Top<=info.Monitor.Top && r.Right>=info.Monitor.Right && r.Bottom>=info.Monitor.Bottom;
+    }
     internal static bool FitsWorkArea(Window window)
     {
         var handle=new WindowInteropHelper(window).Handle;var info=new MonitorInfo{Size=Marshal.SizeOf<MonitorInfo>()};return GetMonitorInfo(MonitorFromWindow(handle,2),ref info)&&GetWindowRect(handle,out var r)&&r.Left>=info.Work.Left&&r.Top>=info.Work.Top&&r.Right<=info.Work.Right&&r.Bottom<=info.Work.Bottom;

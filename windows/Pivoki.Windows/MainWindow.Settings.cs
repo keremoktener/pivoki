@@ -15,7 +15,7 @@ public sealed partial class MainWindow
     private TrayHost? tray;private bool quitting;
     private void SetupDesktop()
     {
-        globalDrag=new(this,preferences,OnGlobalDrop,OpenCopiedLink);
+        globalDrag=new(this,preferences,OnGlobalDrop,OpenCopiedLink,PersonalWheel);
         try{tray=new(this,ShowMain,TrayMenu);}catch(InvalidOperationException error){L10n.SetText(status,error.Message);}
         Closing+=(_,e)=>{if(!e.Cancel&&tray is not null&&preferences.Value.KeepInTray&&!quitting){e.Cancel=true;Hide();}};
         // Without a tray icon (Explorer not ready at sign-in), a hidden Pivoki could not be reached.
@@ -27,7 +27,7 @@ public sealed partial class MainWindow
     {
         var menu=new System.Windows.Controls.ContextMenu();
         void Item(string text,Action action){var item=new System.Windows.Controls.MenuItem();L10n.Bind(item,System.Windows.Controls.HeaderedItemsControl.HeaderProperty,text);item.Click+=(_,_)=>action();menu.Items.Add(item);}
-        Item("Open Pivoki",ShowMain);Item("Library",()=>{ShowMain();ShowLibrary(true);});Item("Download copied link",OpenCopiedLink);Item("Settings",()=>{ShowMain();ShowSettings();});menu.Items.Add(DragShortcutsItem());Item(update is null?"Check for updates":"Update to "+update.Version,()=>{ShowMain();_ = CheckUpdatesAsync(true);});menu.Items.Add(new System.Windows.Controls.Separator());Item("Quit Pivoki",()=>{if(busy){ShowMain();L10n.SetText(status,"Finish or cancel the current operation before quitting.");return;}quitting=true;Application.Current.Shutdown();});return menu;
+        Item("Open Pivoki",ShowMain);Item("Output packages",()=>{ShowMain();OpenPackages();});Item("Studio",ShowStudio);Item("Library",()=>{ShowMain();ShowLibrary(true);});Item("Download copied link",OpenCopiedLink);Item("Settings",()=>{ShowMain();ShowSettings();});menu.Items.Add(DragShortcutsItem());Item(update is null?"Check for updates":"Update to "+update.Version,()=>{ShowMain();_ = CheckUpdatesAsync(true);});menu.Items.Add(new System.Windows.Controls.Separator());Item("Quit Pivoki",()=>{if(busy){ShowMain();L10n.SetText(status,"Finish or cancel the current operation before quitting.");return;}quitting=true;Application.Current.Shutdown();});return menu;
     }
     // Same setting as the Settings toggle, reachable without leaving a game or an editor.
     // Disabled while a dialog is open so an open Settings window cannot show a stale value.
@@ -37,7 +37,7 @@ public sealed partial class MainWindow
         item.Click+=(_,_)=>{try{preferences.Save(preferences.Value with{Enabled=item.IsChecked});ApplyPreferences();}catch(Exception error) when(error is IOException or UnauthorizedAccessException){item.IsChecked=preferences.Value.Enabled;ShowMain();L10n.SetText(status,error.Message);}};
         return item;
     }
-    private void ApplyPreferences(){L10n.Language=preferences.Value.Language;Feedback.Enabled=preferences.Value.Feedback;WheelPresentation.Preferences=preferences.Value;}
+    private void ApplyPreferences(){L10n.Language=preferences.Value.Language;Feedback.Enabled=preferences.Value.Feedback;WheelPresentation.Preferences=preferences.Value;if(IsLoaded)Refresh();}
     private SettingsWindow? settingsWindow;
     internal SettingsWindow? OpenSettings=>settingsWindow;
     // A separate window, not a dialog: a dialog disables this window, and that pauses the global wheel and Ctrl+Shift+D.
@@ -61,7 +61,7 @@ public sealed partial class MainWindow
         Dispatcher.BeginInvoke(async()=>
         {
             if(busy)return;
-            if(paths is {Length:>0}&&!action.StartsWith("download:",StringComparison.Ordinal)){files.Clear();Add(paths);if(action.StartsWith("convert:",StringComparison.Ordinal))await EditAsync(new(action,"Convert","↗"));else if(new[]{"share","float","copy","move","copyPath","terminal"}.Contains(action))await PerformFileAction(action,paths);else await EditAsync(new(action,FeatureCatalog.ToolNames.GetValueOrDefault(action,action),"✦"));}
+            if(paths is {Length:>0}&&!action.StartsWith("download:",StringComparison.Ordinal)){files.Clear();Add(paths);if(HandlePackageChoice(action))return;if(action.StartsWith("convert:",StringComparison.Ordinal))await EditAsync(new(action,"Convert","↗"));else if(new[]{"share","float","copy","move","copyPath","terminal"}.Contains(action))await PerformFileAction(action,paths);else await EditAsync(new(action,FeatureCatalog.ToolNames.GetValueOrDefault(action,action),"✦"));}
             else if(payload is not null){link.Text=payload.Url;SetDownloadKind(payload,action.StartsWith("download:",StringComparison.Ordinal)?action[9..]:null);Show();if(WindowState==WindowState.Minimized)WindowState=WindowState.Normal;Activate();OpenDownload();}
         });
     }
